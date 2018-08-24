@@ -19,8 +19,10 @@ class LinkApp extends React.Component {
 
   render() {
     return (
-      <div className='total-screen main-container' >
-        <div>
+      <div className='total-screen main' >
+        <div className='leftspace'>
+          <p>
+          </p>
         </div>
         <FieldContainer gridField={this.state.field.gridField}
           position={this.state.field.pos} />

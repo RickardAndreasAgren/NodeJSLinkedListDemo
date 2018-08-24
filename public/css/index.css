@@ -9,6 +9,9 @@ body {
 
 .fieldcontainer {
   border: black;
+  float: left;
+  min-width: 375px;
+  width: 65%;
 }
 
 .home {
@@ -16,7 +19,14 @@ body {
 }
 
 .infocontainer {
+  float: left;
   border: black;
+}
+
+.leftspace {
+  float: left;
+  min-width: 3%;
+  width: 20%;
 }
 
 .main-container {
@@ -30,5 +40,4 @@ body {
 
 .total-screen {
   min-height: 100%;
-  width: 100%;
 }

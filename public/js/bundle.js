@@ -154,8 +154,12 @@ var LinkApp = function (_React$Component) {
     value: function render() {
       return _react2.default.createElement(
         'div',
-        { className: 'total-screen main-container' },
-        _react2.default.createElement('div', null),
+        { className: 'total-screen main' },
+        _react2.default.createElement(
+          'div',
+          { className: 'leftspace' },
+          _react2.default.createElement('p', null)
+        ),
         _react2.default.createElement(_FieldContainer2.default, { gridField: this.state.field.gridField,
           position: this.state.field.pos }),
         _react2.default.createElement(_InfoContainer2.default, { password: this.state.info.password,
