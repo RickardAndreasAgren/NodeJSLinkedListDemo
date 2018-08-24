@@ -7,7 +7,7 @@ class InfoContainer extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className='infocontainer'>
         <p>
           Time to build this demo!
         </p>

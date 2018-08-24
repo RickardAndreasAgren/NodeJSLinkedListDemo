@@ -4,7 +4,7 @@ import React from 'react';
 import FieldContainer from './Components/FieldContainer.react';
 import InfoContainer from './Components/InfoContainer.react';
 
-import StateManager from './Components/StateManager';
+import StateManager from './StateManager';
 
 class LinkApp extends React.Component {
   constructor(props) {
@@ -19,14 +19,16 @@ class LinkApp extends React.Component {
 
   render() {
     return (
-      <div id={'total-screen'}>
+      <div className='total-screen main-container' >
+        <div>
+        </div>
         <FieldContainer gridField={this.state.field.gridField}
           position={this.state.field.pos} />
         <InfoContainer password={this.state.info.password}
           error={this.state.info.error}
           mode={this.state.mode}/>
       </div>
-    );
+  );
   }
 }
 

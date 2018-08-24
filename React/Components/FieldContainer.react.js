@@ -10,7 +10,7 @@ class FieldContainer extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className='fieldcontainer total-screen'>
         <p>
           Time to build this demo!
         </p>

@@ -3,7 +3,32 @@ html {
   height: 100%;
 }
 
-.total-screen {
+body {
   height: 100%;
+}
+
+.fieldcontainer {
+  border: black;
+}
+
+.home {
+  height: 100%;
+}
+
+.infocontainer {
+  border: black;
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+}
+
+.pagecontainer {
+  height: 100%;
+}
+
+.total-screen {
+  min-height: 100%;
   width: 100%;
 }
