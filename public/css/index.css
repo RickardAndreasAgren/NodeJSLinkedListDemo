@@ -10,7 +10,7 @@ body {
 .fieldcontainer {
   border: black;
   float: left;
-  min-width: 375px;
+  min-width: 400px;
   width: 65%;
 }
 

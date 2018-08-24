@@ -19,28 +19,70 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/*
+  gridfield: [][]
+  position: {x,y}
+*/
+
 var FieldContainer = function (_React$Component) {
   _inherits(FieldContainer, _React$Component);
 
   function FieldContainer(props) {
     _classCallCheck(this, FieldContainer);
 
-    return _possibleConstructorReturn(this, (FieldContainer.__proto__ || Object.getPrototypeOf(FieldContainer)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (FieldContainer.__proto__ || Object.getPrototypeOf(FieldContainer)).call(this, props));
+
+    _this.state = {
+      width: 0
+    };
+
+    _this.checkWidth = _this.checkWidth.bind(_this);
+    _this.fieldWidthRef = _react2.default.createRef();
+    return _this;
   }
 
-  //  feed state to layout
-
   _createClass(FieldContainer, [{
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      var returner = true;
+      if (nextState.width == this.state.width) {
+        if (nextProps.position.x == this.props.position.x && nextProps.position.y == this.props.position.y) {
+          returner = false;
+        }
+      }
+
+      return returner;
+    }
+  }, {
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this.setState({ width: this.fieldWidthRef.current.offsetWidth });
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      this.setState({ width: this.fieldWidthRef.current.offsetWidth });
+    }
+  }, {
+    key: 'checkWidth',
+    value: function checkWidth(e) {
+      console.log(this.fieldWidthRef.current.offsetWidth);
+      return 0;
+    }
+  }, {
     key: 'render',
     value: function render() {
+      console.log(this.state.width);
       return _react2.default.createElement(
         'div',
-        { className: 'fieldcontainer total-screen' },
+        { className: 'fieldcontainer total-screen',
+          ref: this.fieldWidthRef },
         _react2.default.createElement(
           'p',
           null,
           'Time to build this demo!'
-        )
+        ),
+        _react2.default.createElement('input', { type: 'button', onClick: this.checkWidth })
       );
     }
   }]);
@@ -183,21 +225,23 @@ Object.defineProperty(exports, "__esModule", {
 
 // current pos, field state, event function
 // InfoContainer: pw, error, mode
-var xpos = 10;
-var ypos = 10;
+var xpos = 9;
+var ypos = 9;
 var password = '';
 var error = '';
 var placeOrMove = 'move'; // 'move' || 'place';
 var lock = false;
 var fieldMatrix = [];
-for (var i = 0; i < 20; i++) {
+for (var i = 0; i < 19; i++) {
   var newArray = [];
-  for (var j = 0; i < 20; i++) {
+  for (var j = 0; i < 19; i++) {
     newArray.push('0');
   }
 
   fieldMatrix.push(newArray);
 }
+
+// 20px tile minimum
 
 var StateManager = {
   getState: function getState() {
