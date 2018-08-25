@@ -1,5 +1,10 @@
 
+
+Create mouseclick pickup
+-Use a hidden input field to pick up
+  key presses
 Layout
+-Calc active width
 Board controller
 State management
 Grid management

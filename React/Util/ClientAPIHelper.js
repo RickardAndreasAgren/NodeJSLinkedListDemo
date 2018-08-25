@@ -107,7 +107,7 @@ var ClientAPIHelper = {
     var helper = this;
     return new Promise((resolve, reject) => {
       var request = new XMLHttpRequest();
-      request.open('POST', '/apicall', true);
+      request.open(method, target, true);
       request.setRequestHeader('Content-Type',
       'application/x-www-form-urlencoded');
       resolve({
@@ -127,8 +127,6 @@ var ClientAPIHelper = {
   prepareRequestPromise: function (argblob) {
     var helper = this;
     return new Promise((resolve, reject) => {
-
-      argblob.data.cmethod = argblob.method;
 
       argblob.xhr.setRequestHeader('Accept', 'text/html');
       if (argblob.fileData) {

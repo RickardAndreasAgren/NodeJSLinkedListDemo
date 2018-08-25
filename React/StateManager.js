@@ -1,6 +1,10 @@
 
-// current pos, field state, event function
+import TranslateDirectionToImage from './Util/TranslateDirectionToImage';
+
+// Current pos, field state, event function
 // InfoContainer: pw, error, mode
+var focusInput = false;
+var inputValue = '0';
 var xpos = 9;
 var ypos = 9;
 var password = '';
@@ -20,7 +24,7 @@ for (var i = 0; i < 19; i++) {
 // 20px tile minimum
 
 const StateManager = {
-  getState: function () {
+  getState: function() {
     return {
       field: {
         pos: { xpos, ypos },
@@ -31,7 +35,15 @@ const StateManager = {
         err: error,
         mode: placeOrMove,
       },
+      keyField: inputValue,
+      focusOn: focusInput,
     };
+  },
+
+  setFocus: function(tof) {
+    focusInput = tof;
+    console.log('SMSF', tof);
+    return 0;
   },
 
 };

@@ -3,8 +3,9 @@ import React from 'react';
 
 
 /*
-  gridfield: [][]
+  Gridfield: [][]
   position: {x,y}
+  sendMouseFunc: function
 */
 
 class FieldContainer extends React.Component {
@@ -15,8 +16,15 @@ class FieldContainer extends React.Component {
       width: 0,
     };
 
+    this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentDidUpdate = this.componentDidUpdate.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
+
+    this.fieldContainerElement = React.createRef();
     this.checkWidth = this.checkWidth.bind(this);
-    this.fieldWidthRef = React.createRef();
+
+    this.handleClickInside = this.handleClickInside.bind(this);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -29,34 +37,53 @@ class FieldContainer extends React.Component {
     }
 
     return returner;
-  }
+  };
 
   componentDidMount() {
-    this.setState({ width: this.fieldWidthRef.current.offsetWidth });
-  }
+    this.setState({ width: this.fieldContainerElement.current.offsetWidth });
+
+    this.checkWidth();
+  };
 
   componentDidUpdate() {
-    this.setState({ width: this.fieldWidthRef.current.offsetWidth });
-  }
+    this.setState({ width: this.fieldContainerElement.current.offsetWidth });
+  };
 
-  checkWidth(e) {
-    console.log(this.fieldWidthRef.current.offsetWidth);
-    return 0;
-  }
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.handleClickInside);
+  };
+
+
+  checkWidth() {
+    if (this.fieldContainerElement) {
+      console.log(this.fieldContainerElement.current.offsetWidth);
+    }
+  };
+
+  handleClickInside(e) {
+    e.preventDefault();
+    if (this.fieldContainerElement.current &&
+      this.fieldContainerElement.current.contains(e.target)
+    ) {
+      this.props.sendMouseFunc();
+    }
+  };
 
   render() {
+
+    document.addEventListener('mousedown', this.handleClickInside);
+
     console.log(this.state.width);
+
     return (
       <div className='fieldcontainer total-screen'
-        ref={this.fieldWidthRef}>
+        ref={this.fieldContainerElement}>
         <p>
           Time to build this demo!
         </p>
-        <input type='button' onClick={this.checkWidth}>
-        </input>
       </div>
     );
-  }
+  };
 }
 
 export default FieldContainer;
