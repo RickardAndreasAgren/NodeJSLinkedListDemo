@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-
+import FieldLayout from './FieldLayout.react';
 /*
   Gridfield: [][]
   position: {x,y}
@@ -73,14 +73,13 @@ class FieldContainer extends React.Component {
 
     document.addEventListener('mousedown', this.handleClickInside);
 
-    console.log(this.state.width);
-
     return (
       <div className='fieldcontainer total-screen'
         ref={this.fieldContainerElement}>
-        <p>
-          Time to build this demo!
-        </p>
+        {this.state.width > 399 &&
+          <FieldLayout gridField={this.props.gridField}
+            position={this.props.position}/>
+        }
       </div>
     );
   };

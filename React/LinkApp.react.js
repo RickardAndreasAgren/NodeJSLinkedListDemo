@@ -5,7 +5,6 @@ import FieldContainer from './Components/FieldContainer.react';
 import InfoContainer from './Components/InfoContainer.react';
 
 import StateManager from './StateManager';
-import KeyInputs from './Util/KeyInputs';
 
 class LinkApp extends React.Component {
   constructor(props) {
