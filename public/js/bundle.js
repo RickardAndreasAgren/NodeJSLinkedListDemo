@@ -118,7 +118,7 @@ var FieldContainer = function (_React$Component) {
 
 exports.default = FieldContainer;
 
-},{"./FieldLayout.react":2,"react":32}],2:[function(require,module,exports){
+},{"./FieldLayout.react":2,"react":34}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -170,7 +170,7 @@ var FieldLayout = function (_React$Component) {
 
 exports.default = FieldLayout;
 
-},{"react":32}],3:[function(require,module,exports){
+},{"react":34}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -220,7 +220,7 @@ var InfoContainer = function (_React$Component) {
 
 exports.default = InfoContainer;
 
-},{"react":32}],4:[function(require,module,exports){
+},{"react":34}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -358,7 +358,7 @@ var LinkApp = function (_React$Component) {
 
 exports.default = LinkApp;
 
-},{"./Components/FieldContainer.react":1,"./Components/InfoContainer.react":3,"./StateManager":5,"react":32}],5:[function(require,module,exports){
+},{"./Components/FieldContainer.react":1,"./Components/InfoContainer.react":3,"./StateManager":5,"react":34}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -383,10 +383,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // InfoContainer: pw, error, mode
 
 var arrows = {
-  u: true,
-  d: true,
-  l: true,
-  r: true
+  U: true,
+  D: true,
+  L: true,
+  R: true
 };
 
 var focusInput = false;
@@ -394,8 +394,8 @@ var inputValue = '0';
 var xpos = 9;
 var ypos = 9;
 var currentTile = 'I'; // I || L || T || X
-var direction = 'U'; // U || D || L || R
-var origin = 'D'; // U || D || L || R
+var direction = 'U'; // U || D || L || R (absolute)
+var origin = 'D'; // U || D || L || R (absolute)
 var password = '';
 var error = '';
 var placeOrMove = 'move'; // 'move' || 'place';
@@ -447,8 +447,9 @@ var StateManager = {
               x: xpos,
               y: ypos,
               origin: origin,
-              direction: direction
-            }, currentTile, fieldMatrix);
+              direction: direction,
+              type: currentTile
+            }, fieldMatrix);
           } else {
             // . e b s
             returner = actionIntention == 'e' ? initiatePlace() : actionIntention == 's' ? changePlacer() : actionIntention == 'b' ? initiateDelete() : null;
@@ -509,13 +510,22 @@ var StateManager = {
 
 exports.default = StateManager;
 
-},{"./Util/ActionControl":6,"./Util/KeyInputs":7,"./Util/TranslateDirectionToImage":8}],6:[function(require,module,exports){
-"use strict";
+},{"./Util/ActionControl":6,"./Util/KeyInputs":8,"./Util/TranslateDirectionToImage":10}],6:[function(require,module,exports){
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _TileMath = require('./TileMath');
+
+var _TileMath2 = _interopRequireDefault(_TileMath);
+
+var _DirectionByTile = require('./DirectionByTile');
+
+var _DirectionByTile2 = _interopRequireDefault(_DirectionByTile);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* I
   action: actionIntention,
@@ -525,24 +535,25 @@ Object.defineProperty(exports, "__esModule", {
    y: ypos,
    origin: dir,
    direction: dir,
+   type: type,
  }
   field: fieldMatrix,
 */
 var directions = {
-  U: { i: 1, a: Y },
-  D: { i: -1, a: Y },
-  R: { i: 1, a: X },
-  L: { i: -1, a: X }
+  U: { i: 1, a: 'Y' },
+  D: { i: -1, a: 'Y' },
+  R: { i: 1, a: 'X' },
+  L: { i: -1, a: 'X' }
 };
 
 var ActionControl = {
-  move: function move(intention, currentPosition, currentTile, fieldMatrix) {
+  move: function move(intention, tile, fieldMatrix) {
     var _this = this;
-    var cp = currentPosition;
+
     var goTo = directions[intention];
 
     return new Promise(function (resolve, reject) {
-      resolve(_this.lookupIntent(x, y, direction));
+      resolve(_this.lookupIntent(intention, tile, fieldMatrix));
     }).then(function (possibleIntent) {});
   },
 
@@ -550,29 +561,93 @@ var ActionControl = {
     var align = directions[direction];
   },
 
-  lookupIntent: function lookupIntent(intent, currentTile, x, y, direction) {
+  lookupIntent: function lookupIntent(intent, currentTile, fieldMatrix) {
     var _this2 = this;
 
     var returner = null;
     return new Promise(function (resolve, reject) {
-      if (_this2.lookupExit(intent, currentTile, direction) && _this2.lookupDestination(x, y, entrypoint)) {
-        resolve(true);
+      var destinationInformation = null;
+      if (_this2.lookupExit(intent, currentTile)) {
+        destinationInformation = _this2.lookupDestination(intent, currentTile, fieldMatrix);
+        if (!destinationInformation) {
+          reject(false);
+        } else {
+          resolve(destinationInformation);
+        }
       } else {
         reject(false);
       }
+    }).then(function (destinationInformation) {
+      return [];
     });
   },
 
-  lookupExit: function lookupExit(intent, currentTile, direction) {},
+  lookupExit: function lookupExit(intent, currentTile) {
+    var dbt = 'check' + currentTile;
+    return intent == origin ? true : _DirectionByTile2.default[dbt](currentTile, intent) ? true : false;
+  },
 
-  lookupDestination: function lookupDestination(x, y, entrypoint) {
-    // Invert intent to check entry
+  lookupDestination: function lookupDestination(intent, currentTile, fieldMatrix) {
+    var returner = null;
+    var tile = fieldMatrix[currentTile.x][currentTile.y];
+    if (tile == 0) {
+      returner = 'new';
+    } else {
+      var entry = _TileMath2.default.numberToDirection[_TileMath2.default.plus(intent, 2)];
+      var dbt = 'check' + tile;
+      if (DirectionbyTile[dbt](currentTile, intent)) {
+        returner = tile;
+      } else {
+        returner = false;
+      }
+    }
+    return returner;
   }
 };
 
 exports.default = ActionControl;
 
-},{}],7:[function(require,module,exports){
+},{"./DirectionByTile":7,"./TileMath":9}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _TileMath = require('./TileMath');
+
+var _TileMath2 = _interopRequireDefault(_TileMath);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var DirectionByTile = {
+
+  checkI: function checkI(tile, intent) {
+    var dt = _TileMath2.default.directionToNumber;
+    return tile.direction == intent ? true : _TileMath2.default.plus(dt[intent], 2) ? true : false;
+  },
+
+  /*
+    Origin, direction
+  */
+
+  checkL: function checkL(tile, intent) {
+    return tile.direction == intent || tile.origin == intent;
+  },
+
+  checkT: function checkT(tile, intent) {
+    var dt = _TileMath2.default.directionToNumber;
+    return tile.direction == intent ? true : dt[tile.direction] == _TileMath2.default.minus(dt[intent], 1) ? true : dt[tile.direction] == _TileMath2.default.plus(dt[intent], 1) ? true : false;
+  },
+
+  checkX: function checkX(direction, intent) {
+    return true;
+  }
+};
+
+exports.default = DirectionByTile;
+
+},{"./TileMath":9}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -599,19 +674,65 @@ var KeyInputs = {
   },
 
   keyPressList: {
-    Enter: e,
-    Control: e,
-    Backspace: b,
-    ArrowUp: U,
-    ArrowDown: D,
-    ArrowLeft: L,
-    ArrowRight: R
+    Enter: 'e',
+    Control: 'e',
+    Backspace: 'b',
+    ArrowUp: 'U',
+    ArrowDown: 'D',
+    ArrowLeft: 'L',
+    ArrowRight: 'R'
   }
 };
 
 exports.default = KeyInputs;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var TileMath = {
+
+  directionToNumber: {
+    U: 1,
+    R: 2,
+    D: 3,
+    L: 4
+  },
+
+  numberToDirection: {
+    1: 'U',
+    2: 'R',
+    3: 'D',
+    4: 'L'
+  },
+
+  plus: function plus(i, a) {
+    var returner = null;
+    if (i + a < 5) {
+      returner = i + a;
+    } else {
+      returner = i + a - 4;
+    }
+    return returner;
+  },
+
+  minus: function minus(i, a) {
+    var returner = null;
+    if (i > a) {
+      returner = i - a;
+    } else {
+      returner = 4 - (a - i);
+    }
+    return returner;
+  }
+};
+
+exports.default = TileMath;
+
+},{}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -622,7 +743,7 @@ var TranslateDirectionToImage = {};
 
 exports.default = TranslateDirectionToImage;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -656,7 +777,7 @@ var ExecutionEnvironment = {
 };
 
 module.exports = ExecutionEnvironment;
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 
 /**
@@ -686,7 +807,7 @@ function camelize(string) {
 }
 
 module.exports = camelize;
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -724,7 +845,7 @@ function camelizeStyleName(string) {
 }
 
 module.exports = camelizeStyleName;
-},{"./camelize":10}],12:[function(require,module,exports){
+},{"./camelize":12}],14:[function(require,module,exports){
 'use strict';
 
 /**
@@ -762,7 +883,7 @@ function containsNode(outerNode, innerNode) {
 }
 
 module.exports = containsNode;
-},{"./isTextNode":20}],13:[function(require,module,exports){
+},{"./isTextNode":22}],15:[function(require,module,exports){
 "use strict";
 
 /**
@@ -799,7 +920,7 @@ emptyFunction.thatReturnsArgument = function (arg) {
 };
 
 module.exports = emptyFunction;
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -819,7 +940,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = emptyObject;
 }).call(this,require('_process'))
-},{"_process":24}],15:[function(require,module,exports){
+},{"_process":26}],17:[function(require,module,exports){
 'use strict';
 
 /**
@@ -856,7 +977,7 @@ function getActiveElement(doc) /*?DOMElement*/{
 }
 
 module.exports = getActiveElement;
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 /**
@@ -887,7 +1008,7 @@ function hyphenate(string) {
 }
 
 module.exports = hyphenate;
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -924,7 +1045,7 @@ function hyphenateStyleName(string) {
 }
 
 module.exports = hyphenateStyleName;
-},{"./hyphenate":16}],18:[function(require,module,exports){
+},{"./hyphenate":18}],20:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -980,7 +1101,7 @@ function invariant(condition, format, a, b, c, d, e, f) {
 
 module.exports = invariant;
 }).call(this,require('_process'))
-},{"_process":24}],19:[function(require,module,exports){
+},{"_process":26}],21:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1003,7 +1124,7 @@ function isNode(object) {
 }
 
 module.exports = isNode;
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1026,7 +1147,7 @@ function isTextNode(object) {
 }
 
 module.exports = isTextNode;
-},{"./isNode":19}],21:[function(require,module,exports){
+},{"./isNode":21}],23:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -1092,7 +1213,7 @@ function shallowEqual(objA, objB) {
 }
 
 module.exports = shallowEqual;
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -1157,7 +1278,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = warning;
 }).call(this,require('_process'))
-},{"./emptyFunction":13,"_process":24}],23:[function(require,module,exports){
+},{"./emptyFunction":15,"_process":26}],25:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -1249,7 +1370,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -1435,7 +1556,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -1530,7 +1651,7 @@ function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
 module.exports = checkPropTypes;
 
 }).call(this,require('_process'))
-},{"./lib/ReactPropTypesSecret":26,"_process":24}],26:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":28,"_process":26}],28:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -1544,7 +1665,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 (function (process){
 /** @license React v16.4.2
  * react-dom.development.js
@@ -18979,7 +19100,7 @@ module.exports = reactDom;
 }
 
 }).call(this,require('_process'))
-},{"_process":24,"fbjs/lib/ExecutionEnvironment":9,"fbjs/lib/camelizeStyleName":11,"fbjs/lib/containsNode":12,"fbjs/lib/emptyFunction":13,"fbjs/lib/emptyObject":14,"fbjs/lib/getActiveElement":15,"fbjs/lib/hyphenateStyleName":17,"fbjs/lib/invariant":18,"fbjs/lib/shallowEqual":21,"fbjs/lib/warning":22,"object-assign":23,"prop-types/checkPropTypes":25,"react":32}],28:[function(require,module,exports){
+},{"_process":26,"fbjs/lib/ExecutionEnvironment":11,"fbjs/lib/camelizeStyleName":13,"fbjs/lib/containsNode":14,"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/getActiveElement":17,"fbjs/lib/hyphenateStyleName":19,"fbjs/lib/invariant":20,"fbjs/lib/shallowEqual":23,"fbjs/lib/warning":24,"object-assign":25,"prop-types/checkPropTypes":27,"react":34}],30:[function(require,module,exports){
 /** @license React v16.4.2
  * react-dom.production.min.js
  *
@@ -19221,7 +19342,7 @@ var wi={createPortal:vi,findDOMNode:function(a){return null==a?null:1===a.nodeTy
 arguments)},unstable_batchedUpdates:ci,unstable_deferredUpdates:Ih,unstable_interactiveUpdates:fi,flushSync:ei,unstable_flushControlled:gi,__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{EventPluginHub:Ka,EventPluginRegistry:va,EventPropagators:$a,ReactControlledComponent:Rb,ReactDOMComponentTree:Qa,ReactDOMEventListener:Od},unstable_createRoot:function(a,b){return new ri(a,!0,null!=b&&!0===b.hydrate)}};li({findFiberByHostInstance:Na,bundleType:0,version:"16.4.2",rendererPackageName:"react-dom"});
 var Bi={default:wi},Ci=Bi&&wi||Bi;module.exports=Ci.default?Ci.default:Ci;
 
-},{"fbjs/lib/ExecutionEnvironment":9,"fbjs/lib/containsNode":12,"fbjs/lib/emptyFunction":13,"fbjs/lib/emptyObject":14,"fbjs/lib/getActiveElement":15,"fbjs/lib/invariant":18,"fbjs/lib/shallowEqual":21,"object-assign":23,"react":32}],29:[function(require,module,exports){
+},{"fbjs/lib/ExecutionEnvironment":11,"fbjs/lib/containsNode":14,"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/getActiveElement":17,"fbjs/lib/invariant":20,"fbjs/lib/shallowEqual":23,"object-assign":25,"react":34}],31:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -19263,7 +19384,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":27,"./cjs/react-dom.production.min.js":28,"_process":24}],30:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":29,"./cjs/react-dom.production.min.js":30,"_process":26}],32:[function(require,module,exports){
 (function (process){
 /** @license React v16.4.2
  * react.development.js
@@ -20753,7 +20874,7 @@ module.exports = react;
 }
 
 }).call(this,require('_process'))
-},{"_process":24,"fbjs/lib/emptyFunction":13,"fbjs/lib/emptyObject":14,"fbjs/lib/invariant":18,"fbjs/lib/warning":22,"object-assign":23,"prop-types/checkPropTypes":25}],31:[function(require,module,exports){
+},{"_process":26,"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/invariant":20,"fbjs/lib/warning":24,"object-assign":25,"prop-types/checkPropTypes":27}],33:[function(require,module,exports){
 /** @license React v16.4.2
  * react.production.min.js
  *
@@ -20777,7 +20898,7 @@ _calculateChangedBits:b,_defaultValue:a,_currentValue:a,_currentValue2:a,_change
 b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(d[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)d.children=e;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];d.children=l}return{$$typeof:t,type:a.type,key:g,ref:h,props:d,_owner:f}},createFactory:function(a){var b=M.bind(null,a);b.type=a;return b},isValidElement:N,version:"16.4.2",__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentOwner:J,
 assign:k}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default?Z.default:Z;
 
-},{"fbjs/lib/emptyFunction":13,"fbjs/lib/emptyObject":14,"fbjs/lib/invariant":18,"object-assign":23}],32:[function(require,module,exports){
+},{"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/invariant":20,"object-assign":25}],34:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -20788,7 +20909,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":30,"./cjs/react.production.min.js":31,"_process":24}],33:[function(require,module,exports){
+},{"./cjs/react.development.js":32,"./cjs/react.production.min.js":33,"_process":26}],35:[function(require,module,exports){
 'use strict';
 
 var _react = require('react');
@@ -20807,4 +20928,4 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 _reactDom2.default.render(_react2.default.createElement(_LinkApp2.default, null), document.getElementById('home'));
 
-},{"../../React/LinkApp.react":4,"react":32,"react-dom":29}]},{},[33]);
+},{"../../React/LinkApp.react":4,"react":34,"react-dom":31}]},{},[35]);

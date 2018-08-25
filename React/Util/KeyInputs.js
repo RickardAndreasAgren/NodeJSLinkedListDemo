@@ -19,13 +19,13 @@ const KeyInputs = {
   },
 
   keyPressList: {
-    Enter: e,
-    Control: e,
-    Backspace: b,
-    ArrowUp: U,
-    ArrowDown: D,
-    ArrowLeft: L,
-    ArrowRight: R,
+    Enter: 'e',
+    Control: 'e',
+    Backspace: 'b',
+    ArrowUp: 'U',
+    ArrowDown: 'D',
+    ArrowLeft: 'L',
+    ArrowRight: 'R',
   },
 }
 

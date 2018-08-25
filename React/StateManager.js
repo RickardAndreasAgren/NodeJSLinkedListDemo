@@ -8,10 +8,10 @@ import ActionControl from './Util/ActionControl';
 // InfoContainer: pw, error, mode
 
 const arrows = {
-  u: true,
-  d: true,
-  l: true,
-  r: true,
+  U: true,
+  D: true,
+  L: true,
+  R: true,
 };
 
 var focusInput = false;
@@ -19,8 +19,8 @@ var inputValue = '0';
 var xpos = 9;
 var ypos = 9;
 var currentTile = 'I'; // I || L || T || X
-var direction = 'U'; // U || D || L || R
-var origin = 'D'; // U || D || L || R
+var direction = 'U'; // U || D || L || R (absolute)
+var origin = 'D'; // U || D || L || R (absolute)
 var password = '';
 var error = '';
 var placeOrMove = 'move'; // 'move' || 'place';
@@ -76,8 +76,8 @@ const StateManager = {
                 y: ypos,
                 origin: origin,
                 direction: direction,
+                type: currentTile,
               },
-              currentTile,
               fieldMatrix,
             );
           } else {
