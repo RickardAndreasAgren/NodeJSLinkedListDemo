@@ -108,7 +108,8 @@ var FieldContainer = function (_React$Component) {
         { className: 'fieldcontainer total-screen',
           ref: this.fieldContainerElement },
         this.state.width > 399 && _react2.default.createElement(_FieldLayout2.default, { gridField: this.props.gridField,
-          position: this.props.position })
+          position: this.props.position,
+          width: this.state.width })
       );
     }
   }]);
@@ -118,7 +119,112 @@ var FieldContainer = function (_React$Component) {
 
 exports.default = FieldContainer;
 
-},{"./FieldLayout.react":2,"react":34}],2:[function(require,module,exports){
+},{"./FieldLayout.react":2,"react":37}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _FieldTile = require('./FieldTile.react');
+
+var _FieldTile2 = _interopRequireDefault(_FieldTile);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var FieldLayout = function (_React$Component) {
+  _inherits(FieldLayout, _React$Component);
+
+  function FieldLayout(props) {
+    _classCallCheck(this, FieldLayout);
+
+    var _this = _possibleConstructorReturn(this, (FieldLayout.__proto__ || Object.getPrototypeOf(FieldLayout)).call(this, props));
+
+    _this.getHeight = _this.getHeight.bind(_this);
+    _this.getWidth = _this.getWidth.bind(_this);
+    _this.buildMatrix = _this.buildMatrix.bind(_this);
+    return _this;
+  }
+
+  // 2-dimensional
+  /* Props
+    gridField
+    position {xpos, ypos}
+    width
+  */
+
+  _createClass(FieldLayout, [{
+    key: 'getHeight',
+    value: function getHeight() {
+      return this.props.gridField[0].length;
+    }
+  }, {
+    key: 'getWidth',
+    value: function getWidth() {
+      return this.props.gridField.length;
+    }
+  }, {
+    key: 'buildMatrix',
+    value: function buildMatrix() {
+      console.log(this.props.gridField);
+      var activeCell = this.props.position.xpos * this.getHeight() + this.props.position.ypos;
+      var currentCell = 0;
+
+      return this.props.gridField.map(function (columnValues, x) {
+        var y = 0;
+        var column = columnValues.map(function (value, y) {
+          var active = currentCell === activeCell;
+          var cell = _react2.default.createElement(_FieldTile2.default, { key: x + '-' + y, x: x, y: y,
+            origin: value.origin, direction: value.direction,
+            tile: value.tileType, selected: active });
+          currentCell++;
+          return cell;
+        }, this);
+        var col = _react2.default.createElement(
+          'div',
+          { className: 'fieldcolumn', key: x },
+          column
+        );
+        return col;
+      }, this);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var size = this.props.width;
+
+      var columns = this.buildMatrix();
+
+      return _react2.default.createElement(
+        'div',
+        { className: 'fieldbottom', style: { width: size, height: size } },
+        _react2.default.createElement(
+          'div',
+          { className: 'fieldlayout' },
+          columns
+        )
+      );
+    }
+  }]);
+
+  return FieldLayout;
+}(_react2.default.Component);
+
+exports.default = FieldLayout;
+
+},{"./FieldTile.react":3,"react":37}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -139,38 +245,49 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var FieldLayout = function (_React$Component) {
-  _inherits(FieldLayout, _React$Component);
+var FieldTile = function (_React$Component) {
+  _inherits(FieldTile, _React$Component);
 
-  function FieldLayout(props) {
-    _classCallCheck(this, FieldLayout);
+  function FieldTile(props) {
+    _classCallCheck(this, FieldTile);
 
-    return _possibleConstructorReturn(this, (FieldLayout.__proto__ || Object.getPrototypeOf(FieldLayout)).call(this, props));
+    return _possibleConstructorReturn(this, (FieldTile.__proto__ || Object.getPrototypeOf(FieldTile)).call(this, props));
   }
 
-  // 2-dimensional
+  /* Props
+  key "X-Y"
+  x
+  y
+  origin
+  direction
+  tileType
+  selected
+  */
 
-  _createClass(FieldLayout, [{
+  _createClass(FieldTile, [{
     key: 'render',
     value: function render() {
+      var selected = this.props.selected ? this.props.selected : false;
+
+      var tileClass = selected ? 'tile quad selected' : 'tile quad';
+
       return _react2.default.createElement(
         'div',
-        null,
-        _react2.default.createElement(
-          'p',
-          null,
-          'Time to build this demo!'
-        )
+        { className: tileClass },
+        _react2.default.createElement('div', { className: 't1 qd' }),
+        _react2.default.createElement('div', { className: 't2 qu' }),
+        _react2.default.createElement('div', { className: 't3 ql' }),
+        _react2.default.createElement('div', { className: 't4 qr' })
       );
     }
   }]);
 
-  return FieldLayout;
+  return FieldTile;
 }(_react2.default.Component);
 
-exports.default = FieldLayout;
+exports.default = FieldTile;
 
-},{"react":34}],3:[function(require,module,exports){
+},{"react":37}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -220,7 +337,7 @@ var InfoContainer = function (_React$Component) {
 
 exports.default = InfoContainer;
 
-},{"react":34}],4:[function(require,module,exports){
+},{"react":37}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -339,9 +456,19 @@ var LinkApp = function (_React$Component) {
           _react2.default.createElement('input', { className: 'keyInput',
             value: this.state.keyField,
             type: 'text',
-            onChange: this.handleKeyInput,
+            onKeyDown: this.handleKeyInput,
+            onChange: function onChange(e) {
+              e.preventDefault();
+            },
             ref: this.setKeyInputRef }),
-          _react2.default.createElement('p', null)
+          _react2.default.createElement(
+            'div',
+            { className: 'tile quad ' },
+            _react2.default.createElement('div', { className: 't1 qd qr qu' }),
+            _react2.default.createElement('div', { className: 't2 qd' }),
+            _react2.default.createElement('div', { className: 't3 qu' }),
+            _react2.default.createElement('div', { className: 't4 qr' })
+          )
         ),
         _react2.default.createElement(_FieldContainer2.default, { gridField: this.state.field.gridField,
           position: this.state.field.pos,
@@ -358,12 +485,16 @@ var LinkApp = function (_React$Component) {
 
 exports.default = LinkApp;
 
-},{"./Components/FieldContainer.react":1,"./Components/InfoContainer.react":3,"./StateManager":5,"react":34}],5:[function(require,module,exports){
+},{"./Components/FieldContainer.react":1,"./Components/InfoContainer.react":4,"./StateManager":6,"react":37}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _ClientAPIHelper = require('./Util/ClientAPIHelper');
+
+var _ClientAPIHelper2 = _interopRequireDefault(_ClientAPIHelper);
 
 var _TranslateDirectionToImage = require('./Util/TranslateDirectionToImage');
 
@@ -379,8 +510,23 @@ var _ActionControl2 = _interopRequireDefault(_ActionControl);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Current pos, field state, event function
-// InfoContainer: pw, error, mode
+/**********Contents****************
+ variables
+  const
+  info
+  field
+
+StateManager
+  getState
+  setFocus
+  attemptAction
+  changeMode
+  changePlacer
+  initiateDelete
+  initiatePlace
+
+getters & setters
+**********************************/
 
 var arrows = {
   U: true,
@@ -389,30 +535,41 @@ var arrows = {
   R: true
 };
 
-var focusInput = false;
-var inputValue = '0';
-var xpos = 9;
-var ypos = 9;
-var currentTile = 'I'; // I || L || T || X
-var direction = 'U'; // U || D || L || R (absolute)
-var origin = 'D'; // U || D || L || R (absolute)
+var deadTile = {
+  origin: '0',
+  direction: '0',
+  tileType: '0'
+};
+
 var password = '';
 var error = '';
 var placeOrMove = 'move'; // 'move' || 'place';
+
+var focusInput = false;
+var inputValue = '0';
+var xpos = 9;
+var ypos = 19;
+var currentTile = 'I'; // I || L || T || X
+var direction = 'U'; // U || D || L || R (absolute)
+var origin = 'D'; // U || D || L || R (absolute)
 var lock = false;
 var fieldMatrix = [];
 for (var i = 0; i < 19; i++) {
   var newArray = [];
-  for (var j = 0; i < 19; i++) {
-    newArray.push('0');
+  for (var j = 0; j < 19; j++) {
+    newArray.push(JSON.parse(JSON.stringify(deadTile)));
   }
 
   fieldMatrix.push(newArray);
 }
+fieldMatrix[9][18] = {
+  origin: 'D',
+  direction: 'U',
+  tileType: 'I'
 
-// 20px tile minimum
+  // 20px tile minimum
 
-var StateManager = {
+};var StateManager = {
   getState: function getState() {
     return {
       field: {
@@ -430,26 +587,25 @@ var StateManager = {
   },
 
   setFocus: function setFocus(tof) {
-    focusInput = tof;
-    console.log('SMSF', tof);
-    return 0;
+    return setFocusInput(tof);
   },
 
   attemptAction: function attemptAction(e) {
-    if (!lock) {
+    if (!getLock()) {
       if (e) {
+        setLock(true);
         return new Promise(function (resolve, reject) {
           resolve(_KeyInputs2.default.getAction(e));
         }).then(function (actionIntention) {
           var returner = null;
           if (actionIntention in arrows) {
-            returner = _ActionControl2.default[type](actionIntention, {
-              x: xpos,
-              y: ypos,
-              origin: origin,
-              direction: direction,
-              type: currentTile
-            }, fieldMatrix);
+            actionResult = _ActionControl2.default[getMode()](actionIntention, {
+              x: getX(),
+              y: getY(),
+              origin: getOrigin(),
+              direction: getDirection(),
+              type: getCurrentTile()
+            }, getField());
           } else {
             // . e b s
             returner = actionIntention == 'e' ? initiatePlace() : actionIntention == 's' ? changePlacer() : actionIntention == 'b' ? initiateDelete() : null;
@@ -457,17 +613,23 @@ var StateManager = {
           return returner;
         }, function (e) {
           throw new Error('Invalid keypress');
+        }).then(function (action) {
+          var returner = null;
+          if (action == 'done') {
+            returner = true;
+          } else if (action == 'new') {
+            setMode('place');
+            // Invert exit direction
+            // default to I type
+          } else if (action != false) {
+            // Update current info to confirm move
+          }
         }).catch(function (e) {
           console.log('Resolving action failed');
           console.log(e);
         });
       }
     }
-  },
-
-  changeMode: function changeMode() {
-    placeOrMove = placeOrMove == 'place' ? 'move' : 'place';
-    return true;
   },
 
   // I || L || T || X
@@ -477,22 +639,22 @@ var StateManager = {
     switch (currentTile) {
       case 'I':
         {
-          currentTile = 'L';
+          setCurrentTile('L');
           break;
         }
       case 'L':
         {
-          currentTile = 'T';
+          setCurrentTile('T');
           break;
         }
       case 'T':
         {
-          currentTile = 'X';
+          setCurrentTile('X');
           break;
         }
       case 'X':
         {
-          currentTile = 'I';
+          setCurrentTile('I');
           break;
         }
       default:
@@ -500,17 +662,145 @@ var StateManager = {
           break;
         }
     }
-    return true;
+    return 'done';
   },
 
-  initiateDelete: function initiateDelete() {},
+  initiateDelete: function initiateDelete() {
 
-  initiatePlace: function initiatePlace() {}
+    return 'done';
+  },
+
+  initiatePlace: function initiatePlace() {
+
+    return 'done';
+  }
 };
+
+function setPassword(newPassword) {
+  password = newPassword;
+  return 0;
+}
+
+function getPassword() {
+  return password;
+}
+
+function setMode(mode) {
+  if (!mode) {
+    placeOrMove = placeOrMove == 'move' ? 'place' : 'move';
+  } else {
+    placeOrMove = mode;
+  }
+  return 0;
+}
+
+function getMode() {
+  return placeOrMove;
+}
+
+function setError(err) {
+  error = err;
+  return 0;
+}
+
+function getError() {
+  return error;
+}
+
+function setFocusInput(focus) {
+  focusInput = focus != focusInput ? focus : focusInput;
+  return 0;
+}
+
+function getFocusInput() {
+  return focusInput;
+}
+
+function setInputValue(val) {
+  inputValue = val;
+  return 0;
+}
+
+function getInputValue() {
+  return inputValue;
+}
+
+function setX(x) {
+  xpos = x;
+  return 0;
+}
+
+function getX() {
+  return xpos;
+}
+
+function setY(y) {
+  ypos = y;
+  return 0;
+}
+
+function getY() {
+  return ypos;
+}
+
+// I || L || T || X
+function setCurrentTile(tileType) {
+  currentTile = tileType;
+  return 0;
+}
+
+function getCurrentTile() {
+  return currentTile;
+}
+
+// U || D || L || R (absolute)
+function setDirection(dir) {
+  direction = dir;
+  return 0;
+}
+
+function getDirection() {
+  return direction;
+}
+
+// U || D || L || R (absolute)
+function setOrigin(point) {
+  origin = point;
+  return 0;
+}
+
+function getOrigin() {
+  return origin;
+}
+
+function setLock(newLock) {
+  if (!newLock) {
+    lock = lock == true ? false : true;
+  } else {
+    lock = newLock;
+  }
+  return 0;
+}
+
+function getLock() {
+  return lock;
+}
+
+function setField(x, y, tileUpdate) {
+  fieldUpdate[x][y] = tileUpdate;
+}
+
+function getField(tile) {
+  if (tile) {
+    return fieldMatrix[tile.x][tile.y];
+  } else {
+    return fieldMatrix;
+  }
+}
 
 exports.default = StateManager;
 
-},{"./Util/ActionControl":6,"./Util/KeyInputs":8,"./Util/TranslateDirectionToImage":10}],6:[function(require,module,exports){
+},{"./Util/ActionControl":7,"./Util/ClientAPIHelper":8,"./Util/KeyInputs":10,"./Util/TranslateDirectionToImage":12}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -590,7 +880,7 @@ var ActionControl = {
   lookupDestination: function lookupDestination(intent, currentTile, fieldMatrix) {
     var returner = null;
     var tile = fieldMatrix[currentTile.x][currentTile.y];
-    if (tile == 0) {
+    if (tile.tileType == 0) {
       returner = 'new';
     } else {
       var entry = _TileMath2.default.numberToDirection[_TileMath2.default.plus(intent, 2)];
@@ -607,7 +897,164 @@ var ActionControl = {
 
 exports.default = ActionControl;
 
-},{"./DirectionByTile":7,"./TileMath":9}],7:[function(require,module,exports){
+},{"./DirectionByTile":9,"./TileMath":11}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _objectToFormdata = require('object-to-formdata');
+
+var _objectToFormdata2 = _interopRequireDefault(_objectToFormdata);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var ClientAPIHelper = {
+
+  buildParams: function buildParams(prefix, obj, add) {
+    var name, i, l, rbracket;
+    rbracket = /\[\]$/;
+    if (obj instanceof Array) {
+      for (i = 0, l = obj.length; i < l; i++) {
+        if (rbracket.test(prefix)) {
+          add(prefix, obj[i]);
+        } else {
+          this.buildParams(prefix + '[' + (_typeof(obj[i]) === 'object' ? i : '') + ']', obj[i], add);
+        }
+      }
+    } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) == 'object') {
+      // Serialize object item.
+      for (name in obj) {
+        this.buildParams(prefix + '[' + name + ']', obj[name], add);
+      }
+    } else {
+      // Serialize scalar item.
+      add(prefix, obj);
+    }
+  },
+
+  makeQueryPromise: function makeQueryPromise(a) {
+    var _this = this;
+
+    return new Promise(function (resolve, reject) {
+
+      var prefix, s, add, name, r20, output;
+      s = [];
+      r20 = /%20/g;
+      add = function add(key, value) {
+        // If value is a function, invoke it and return its value
+        value = typeof value == 'function' ? value() : value == null ? '' : value;
+        s[s.length] = encodeURIComponent(key) + '=' + encodeURIComponent(value);
+      };
+
+      if (a instanceof Array) {
+        for (name in a) {
+          add(name, a[name]);
+        }
+      } else {
+        for (prefix in a) {
+          _this.buildParams(prefix, a[prefix], add);
+        }
+      }
+
+      output = s.join('&').replace(r20, '+');
+      resolve(output);
+    });
+  },
+
+  promisedSend: function promisedSend(args) {
+
+    var data = args.data;
+    console.log('Prep: ', args);
+    var anHttpRequest = args.xhr;
+
+    return new Promise(function (resolve, reject) {
+
+      anHttpRequest.onreadystatechange = function () {
+
+        if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
+          // Console.log(anHttpRequest.responseText);
+          if (anHttpRequest.responseText && anHttpRequest.responseText[0] == '{') {
+            var json = JSON.parse(anHttpRequest.responseText);
+            resolve(json);
+          } else if (anHttpRequest.responseText) {
+            console.log('<CAHissue: notJSON>');
+            console.log(anHttpRequest.responseText);
+            reject({ err: anHttpRequest.responseText });
+          } else {
+            console.log('<successHTTP>');
+            console.log(anHttpRequest);
+            resolve({ ok: '200' });
+          };
+        } else if (anHttpRequest.readyState == 4 && anHttpRequest.status == 500) {
+          if (anHttpRequest.responseText && anHttpRequest.responseText[0] == '{') {
+            var json = JSON.parse(anHttpRequest.responseText);
+            resolve(json);
+          } else if (anHttpRequest.responseText) {
+            console.log('<CAHissue: notJSON>');
+            console.log(anHttpRequest.responseText);
+            reject({ err: anHttpRequest.responseText });
+          } else {
+            console.log('<successHTTP>');
+            console.log(anHttpRequest);
+            resolve({ ok: '200' });
+          };
+        }
+      };
+
+      anHttpRequest.send(data);
+    });
+  },
+
+  // Call method, path target, object data
+
+  dataRequestPromise: function dataRequestPromise(method, target, data) {
+    var helper = this;
+    return new Promise(function (resolve, reject) {
+      var request = new XMLHttpRequest();
+      request.open(method, target, true);
+      request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      resolve({
+        xhr: request, method: method,
+        target: target, data: data,
+        fileData: false
+      });
+    }).then(function (argblob) {
+      return helper.prepareRequestPromise(argblob);
+    }).then(function (argblob) {
+      return helper.promisedSend(argblob);
+    });
+  },
+
+  prepareRequestPromise: function prepareRequestPromise(argblob) {
+    var helper = this;
+    return new Promise(function (resolve, reject) {
+
+      argblob.xhr.setRequestHeader('Accept', 'text/html');
+      if (argblob.fileData) {
+        new Promise(function (resolveInner, rejectInner) {
+          //Check sync on argblob.data
+          resolveInner(objectToFormData(argblob.data));
+        }).then(function (sendData) {
+          console.log('SendData', sendData);
+          resolve({ xhr: argblob.xhr, data: sendData });
+        });
+      } else {
+        helper.makeQueryPromise(argblob.data).then(function (sendData) {
+          console.log('SendData', sendData);
+          resolve({ xhr: argblob.xhr, data: sendData });
+        });
+      }
+    });
+  }
+};
+
+exports.default = ClientAPIHelper;
+
+},{"object-to-formdata":28}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -647,7 +1094,7 @@ var DirectionByTile = {
 
 exports.default = DirectionByTile;
 
-},{"./TileMath":9}],8:[function(require,module,exports){
+},{"./TileMath":11}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -686,7 +1133,7 @@ var KeyInputs = {
 
 exports.default = KeyInputs;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -732,7 +1179,7 @@ var TileMath = {
 
 exports.default = TileMath;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -743,7 +1190,7 @@ var TranslateDirectionToImage = {};
 
 exports.default = TranslateDirectionToImage;
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -777,7 +1224,7 @@ var ExecutionEnvironment = {
 };
 
 module.exports = ExecutionEnvironment;
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 /**
@@ -807,7 +1254,7 @@ function camelize(string) {
 }
 
 module.exports = camelize;
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -845,7 +1292,7 @@ function camelizeStyleName(string) {
 }
 
 module.exports = camelizeStyleName;
-},{"./camelize":12}],14:[function(require,module,exports){
+},{"./camelize":14}],16:[function(require,module,exports){
 'use strict';
 
 /**
@@ -883,7 +1330,7 @@ function containsNode(outerNode, innerNode) {
 }
 
 module.exports = containsNode;
-},{"./isTextNode":22}],15:[function(require,module,exports){
+},{"./isTextNode":24}],17:[function(require,module,exports){
 "use strict";
 
 /**
@@ -920,7 +1367,7 @@ emptyFunction.thatReturnsArgument = function (arg) {
 };
 
 module.exports = emptyFunction;
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -940,7 +1387,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = emptyObject;
 }).call(this,require('_process'))
-},{"_process":26}],17:[function(require,module,exports){
+},{"_process":29}],19:[function(require,module,exports){
 'use strict';
 
 /**
@@ -977,7 +1424,7 @@ function getActiveElement(doc) /*?DOMElement*/{
 }
 
 module.exports = getActiveElement;
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1008,7 +1455,7 @@ function hyphenate(string) {
 }
 
 module.exports = hyphenate;
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -1045,7 +1492,7 @@ function hyphenateStyleName(string) {
 }
 
 module.exports = hyphenateStyleName;
-},{"./hyphenate":18}],20:[function(require,module,exports){
+},{"./hyphenate":20}],22:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -1101,7 +1548,7 @@ function invariant(condition, format, a, b, c, d, e, f) {
 
 module.exports = invariant;
 }).call(this,require('_process'))
-},{"_process":26}],21:[function(require,module,exports){
+},{"_process":29}],23:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1124,7 +1571,7 @@ function isNode(object) {
 }
 
 module.exports = isNode;
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1147,7 +1594,7 @@ function isTextNode(object) {
 }
 
 module.exports = isTextNode;
-},{"./isNode":21}],23:[function(require,module,exports){
+},{"./isNode":23}],25:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -1213,7 +1660,7 @@ function shallowEqual(objA, objB) {
 }
 
 module.exports = shallowEqual;
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -1278,7 +1725,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = warning;
 }).call(this,require('_process'))
-},{"./emptyFunction":15,"_process":26}],25:[function(require,module,exports){
+},{"./emptyFunction":17,"_process":29}],27:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -1370,7 +1817,99 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
+'use strict'
+
+function isUndefined (value) {
+  return value === undefined
+}
+
+function isNull (value) {
+  return value === null
+}
+
+function isObject (value) {
+  return value === Object(value)
+}
+
+function isArray (value) {
+  return Array.isArray(value)
+}
+
+function isDate (value) {
+  return value instanceof Date
+}
+
+function isBlob (value) {
+  return value &&
+    typeof value.size === 'number' &&
+    typeof value.type === 'string' &&
+    typeof value.slice === 'function'
+}
+
+function isFile (value) {
+  return isBlob(value) &&
+    (typeof value.lastModifiedDate === 'object' || typeof value.lastModified === 'number') &&
+    typeof value.name === 'string'
+}
+
+function isFormData (value) {
+  return value instanceof FormData
+}
+
+function objectToFormData (obj, cfg, fd, pre) {
+  if (isFormData(cfg)) {
+    pre = fd
+    fd = cfg
+    cfg = null
+  }
+
+  cfg = cfg || {}
+  cfg.indices = cfg.indices || false
+  fd = fd || new FormData()
+
+  if (isUndefined(obj)) {
+    return fd
+  } else if (isNull(obj)) {
+    fd.append(pre, '')
+  } else if (isArray(obj)) {
+    if (!obj.length) {
+      var key = pre + '[]'
+
+      fd.append(key, '')
+    } else {
+      obj.forEach(function (value, index) {
+        var key = pre + '[' + (cfg.indices ? index : '') + ']'
+
+        objectToFormData(value, cfg, fd, key)
+      })
+    }
+  } else if (isDate(obj)) {
+    fd.append(pre, obj.toISOString())
+  } else if (isObject(obj) && !isFile(obj) && !isBlob(obj)) {
+    Object.keys(obj).forEach(function (prop) {
+      var value = obj[prop]
+
+      if (isArray(value)) {
+        while (prop.length > 2 && prop.lastIndexOf('[]') === prop.length - 2) {
+          prop = prop.substring(0, prop.length - 2)
+        }
+      }
+
+      var key = pre ? (pre + '[' + prop + ']') : prop
+
+      objectToFormData(value, cfg, fd, key)
+    })
+  } else {
+    fd.append(pre, obj)
+  }
+
+  return fd
+}
+
+module.exports = objectToFormData
+
+},{}],29:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -1556,7 +2095,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],27:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -1651,7 +2190,7 @@ function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
 module.exports = checkPropTypes;
 
 }).call(this,require('_process'))
-},{"./lib/ReactPropTypesSecret":28,"_process":26}],28:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":31,"_process":29}],31:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -1665,7 +2204,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function (process){
 /** @license React v16.4.2
  * react-dom.development.js
@@ -19100,7 +19639,7 @@ module.exports = reactDom;
 }
 
 }).call(this,require('_process'))
-},{"_process":26,"fbjs/lib/ExecutionEnvironment":11,"fbjs/lib/camelizeStyleName":13,"fbjs/lib/containsNode":14,"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/getActiveElement":17,"fbjs/lib/hyphenateStyleName":19,"fbjs/lib/invariant":20,"fbjs/lib/shallowEqual":23,"fbjs/lib/warning":24,"object-assign":25,"prop-types/checkPropTypes":27,"react":34}],30:[function(require,module,exports){
+},{"_process":29,"fbjs/lib/ExecutionEnvironment":13,"fbjs/lib/camelizeStyleName":15,"fbjs/lib/containsNode":16,"fbjs/lib/emptyFunction":17,"fbjs/lib/emptyObject":18,"fbjs/lib/getActiveElement":19,"fbjs/lib/hyphenateStyleName":21,"fbjs/lib/invariant":22,"fbjs/lib/shallowEqual":25,"fbjs/lib/warning":26,"object-assign":27,"prop-types/checkPropTypes":30,"react":37}],33:[function(require,module,exports){
 /** @license React v16.4.2
  * react-dom.production.min.js
  *
@@ -19342,7 +19881,7 @@ var wi={createPortal:vi,findDOMNode:function(a){return null==a?null:1===a.nodeTy
 arguments)},unstable_batchedUpdates:ci,unstable_deferredUpdates:Ih,unstable_interactiveUpdates:fi,flushSync:ei,unstable_flushControlled:gi,__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{EventPluginHub:Ka,EventPluginRegistry:va,EventPropagators:$a,ReactControlledComponent:Rb,ReactDOMComponentTree:Qa,ReactDOMEventListener:Od},unstable_createRoot:function(a,b){return new ri(a,!0,null!=b&&!0===b.hydrate)}};li({findFiberByHostInstance:Na,bundleType:0,version:"16.4.2",rendererPackageName:"react-dom"});
 var Bi={default:wi},Ci=Bi&&wi||Bi;module.exports=Ci.default?Ci.default:Ci;
 
-},{"fbjs/lib/ExecutionEnvironment":11,"fbjs/lib/containsNode":14,"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/getActiveElement":17,"fbjs/lib/invariant":20,"fbjs/lib/shallowEqual":23,"object-assign":25,"react":34}],31:[function(require,module,exports){
+},{"fbjs/lib/ExecutionEnvironment":13,"fbjs/lib/containsNode":16,"fbjs/lib/emptyFunction":17,"fbjs/lib/emptyObject":18,"fbjs/lib/getActiveElement":19,"fbjs/lib/invariant":22,"fbjs/lib/shallowEqual":25,"object-assign":27,"react":37}],34:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -19384,7 +19923,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":29,"./cjs/react-dom.production.min.js":30,"_process":26}],32:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":32,"./cjs/react-dom.production.min.js":33,"_process":29}],35:[function(require,module,exports){
 (function (process){
 /** @license React v16.4.2
  * react.development.js
@@ -20874,7 +21413,7 @@ module.exports = react;
 }
 
 }).call(this,require('_process'))
-},{"_process":26,"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/invariant":20,"fbjs/lib/warning":24,"object-assign":25,"prop-types/checkPropTypes":27}],33:[function(require,module,exports){
+},{"_process":29,"fbjs/lib/emptyFunction":17,"fbjs/lib/emptyObject":18,"fbjs/lib/invariant":22,"fbjs/lib/warning":26,"object-assign":27,"prop-types/checkPropTypes":30}],36:[function(require,module,exports){
 /** @license React v16.4.2
  * react.production.min.js
  *
@@ -20898,7 +21437,7 @@ _calculateChangedBits:b,_defaultValue:a,_currentValue:a,_currentValue2:a,_change
 b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(d[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)d.children=e;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];d.children=l}return{$$typeof:t,type:a.type,key:g,ref:h,props:d,_owner:f}},createFactory:function(a){var b=M.bind(null,a);b.type=a;return b},isValidElement:N,version:"16.4.2",__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentOwner:J,
 assign:k}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default?Z.default:Z;
 
-},{"fbjs/lib/emptyFunction":15,"fbjs/lib/emptyObject":16,"fbjs/lib/invariant":20,"object-assign":25}],34:[function(require,module,exports){
+},{"fbjs/lib/emptyFunction":17,"fbjs/lib/emptyObject":18,"fbjs/lib/invariant":22,"object-assign":27}],37:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -20909,7 +21448,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":32,"./cjs/react.production.min.js":33,"_process":26}],35:[function(require,module,exports){
+},{"./cjs/react.development.js":35,"./cjs/react.production.min.js":36,"_process":29}],38:[function(require,module,exports){
 'use strict';
 
 var _react = require('react');
@@ -20928,4 +21467,4 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 _reactDom2.default.render(_react2.default.createElement(_LinkApp2.default, null), document.getElementById('home'));
 
-},{"../../React/LinkApp.react":4,"react":34,"react-dom":31}]},{},[35]);
+},{"../../React/LinkApp.react":5,"react":37,"react-dom":34}]},{},[38]);

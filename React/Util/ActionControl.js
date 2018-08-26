@@ -68,7 +68,7 @@ const ActionControl = {
   lookupDestination: function(intent, currentTile, fieldMatrix) {
     var returner = null;
     var tile = fieldMatrix[currentTile.x][currentTile.y];
-    if (tile == 0) {
+    if (tile.tileType == 0) {
       returner = 'new';
     } else {
       var entry = TileMath.numberToDirection[TileMath.plus(intent, 2)]

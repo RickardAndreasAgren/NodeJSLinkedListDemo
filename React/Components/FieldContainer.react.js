@@ -78,7 +78,8 @@ class FieldContainer extends React.Component {
         ref={this.fieldContainerElement}>
         {this.state.width > 399 &&
           <FieldLayout gridField={this.props.gridField}
-            position={this.props.position}/>
+            position={this.props.position}
+            width={this.state.width}/>
         }
       </div>
     );

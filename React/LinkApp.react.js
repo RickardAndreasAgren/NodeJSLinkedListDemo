@@ -77,10 +77,15 @@ class LinkApp extends React.Component {
           <input className='keyInput'
             value={this.state.keyField}
             type='text'
-            onChange={this.handleKeyInput}
+            onKeyDown={this.handleKeyInput}
+            onChange={(e) => {e.preventDefault()}}
             ref={this.setKeyInputRef}/>
-          <p>
-          </p>
+          <div className='tile quad '>
+            <div className='t1 qd qr qu'></div>
+            <div className='t2 qd'></div>
+            <div className='t3 qu'></div>
+            <div className='t4 qr'></div>
+          </div>
         </div>
         <FieldContainer gridField={this.state.field.gridField}
           position={this.state.field.pos}
@@ -89,7 +94,7 @@ class LinkApp extends React.Component {
           error={this.state.info.error}
           mode={this.state.mode}/>
       </div>
-  );
+    );
   }
 }
 
