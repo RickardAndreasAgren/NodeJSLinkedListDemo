@@ -54,14 +54,15 @@ class LinkApp extends React.Component {
   }
 
   handleKeyInput(e) {
-    e.preventDefault();
+    // E.preventDefault();
     console.log('YA');
     console.log(e);
-    StateManager.attemptAction({key: e.key, code: e.keyCode}, () => {
+    StateManager.attemptAction({key: e.key, code: e.code}, () => {
       StateManager.toggleForceUpdate(true);
       var newState = StateManager.getState();
       this.setState(newState);
     });
+    return 0;
   }
 
   // Pass handle function for typing pw
@@ -79,7 +80,9 @@ class LinkApp extends React.Component {
             value={this.state.keyField}
             type='text'
             onKeyDown={this.handleKeyInput}
-            onChange={(e) => {e.preventDefault()}}
+            onChange={function(e) {
+              return true;
+            }}
             ref={this.setKeyInputRef}/>
           <div className='tile quad '>
             <div className='t1 qd qr qu'></div>

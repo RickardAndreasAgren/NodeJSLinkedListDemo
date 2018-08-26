@@ -8,6 +8,8 @@ const DirectionByTile = {
     var returner = (tile.direction == intent) ? true :
       TileMath.plus(dt[intent], 2) == intent ? true :
       false;
+    console.log('Check I: ');
+    console.log(returner);
     return returner;
   },
 

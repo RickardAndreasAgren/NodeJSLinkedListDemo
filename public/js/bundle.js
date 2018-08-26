@@ -453,14 +453,15 @@ var LinkApp = function (_React$Component) {
     value: function handleKeyInput(e) {
       var _this2 = this;
 
-      e.preventDefault();
+      // E.preventDefault();
       console.log('YA');
       console.log(e);
-      _StateManager2.default.attemptAction({ key: e.key, code: e.keyCode }, function () {
+      _StateManager2.default.attemptAction({ key: e.key, code: e.code }, function () {
         _StateManager2.default.toggleForceUpdate(true);
         var newState = _StateManager2.default.getState();
         _this2.setState(newState);
       });
+      return 0;
     }
 
     // Pass handle function for typing pw
@@ -484,7 +485,7 @@ var LinkApp = function (_React$Component) {
             type: 'text',
             onKeyDown: this.handleKeyInput,
             onChange: function onChange(e) {
-              e.preventDefault();
+              return true;
             },
             ref: this.setKeyInputRef }),
           _react2.default.createElement(
@@ -640,7 +641,7 @@ var StateManager = {
             }, getField());
           } else {
             // . e b s
-            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer() : actionIntention == 'b' ? _this.initiateDelete() : null;
+            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer() : actionIntention == 'b' ? _this.initiateDelete() : actionIntention == 't' ? _this.changeMode() : false;
           }
           console.log(returner);
           return returner;
@@ -733,6 +734,11 @@ var StateManager = {
           break;
         }
     }
+    return 'done';
+  },
+
+  changeMode: function changeMode() {
+    setMode();
     return 'done';
   },
 
@@ -940,7 +946,7 @@ var ActionControl = {
   move: function move(intention, tile, fieldMatrix) {
     var _this = this;
 
-    console.log('Moving');
+    console.log('Try Moving');
 
     return new Promise(function (resolve, reject) {
       resolve(_this.lookupIntent(intention, tile, fieldMatrix));
@@ -948,7 +954,7 @@ var ActionControl = {
   },
 
   place: function place(intention, tile) {
-    var align = directions[direction];
+    return 0;
   },
 
   lookupIntent: function lookupIntent(intent, currentTile, fieldMatrix) {
@@ -1177,6 +1183,8 @@ var DirectionByTile = {
   checkI: function checkI(tile, intent) {
     var dt = _TileMath2.default.directionToNumber;
     var returner = tile.direction == intent ? true : _TileMath2.default.plus(dt[intent], 2) == intent ? true : false;
+    console.log('Check I: ');
+    console.log(returner);
     return returner;
   },
 

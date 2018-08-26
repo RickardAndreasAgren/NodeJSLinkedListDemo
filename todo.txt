@@ -1,9 +1,15 @@
 
+
+FieldTile proper display
+Placing tile display & toggle
+-Allow movement from empty into origin
+ActionControl check if type '0',
+  allow intent to origin
+
 Layout
 -Calc active width
 Board controller
 State management
--Allow movement from empty into placed
 Grid management
 Key
 Piece types

@@ -109,7 +109,8 @@ const StateManager = {
             // . e b s
             returner = actionIntention == 'e' ? this.initiatePlace() :
             actionIntention == 's' ? this.changePlacer() :
-            actionIntention == 'b' ? this.initiateDelete() : null;
+            actionIntention == 'b' ? this.initiateDelete() :
+            actionIntention == 't' ? this.changeMode() : false;
           }
           console.log(returner);
           return returner;
@@ -203,6 +204,11 @@ const StateManager = {
         break;
       }
     }
+    return 'done';
+  },
+
+  changeMode: function() {
+    setMode();
     return 'done';
   },
 

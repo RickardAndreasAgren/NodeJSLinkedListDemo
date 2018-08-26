@@ -24,7 +24,7 @@ const directions = {
 
 const ActionControl = {
   move: function(intention, tile, fieldMatrix) {
-    console.log('Moving');
+    console.log('Try Moving');
 
     return new Promise((resolve,reject) => {
       resolve(this.lookupIntent(intention, tile, fieldMatrix));
@@ -32,7 +32,7 @@ const ActionControl = {
   },
 
   place: function(intention, tile) {
-    var align = directions[direction];
+    return 0;
   },
 
   lookupIntent: function(intent, currentTile, fieldMatrix) {
