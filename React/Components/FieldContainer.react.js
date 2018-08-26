@@ -29,7 +29,9 @@ class FieldContainer extends React.Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     var returner = true;
-    if (nextState.width == this.state.width) {
+    if (nextProps.forceUpdate) {
+      returner = true;
+    } else if (nextState.width == this.state.width) {
       if (nextProps.position.x == this.props.position.x &&
         nextProps.position.y == this.props.position.y) {
         returner = false;
@@ -46,7 +48,6 @@ class FieldContainer extends React.Component {
   };
 
   componentDidUpdate() {
-    this.setState({ width: this.fieldContainerElement.current.offsetWidth });
   };
 
   componentWillUnmount() {
@@ -56,7 +57,7 @@ class FieldContainer extends React.Component {
 
   checkWidth() {
     if (this.fieldContainerElement) {
-      console.log(this.fieldContainerElement.current.offsetWidth);
+      // Console.log(this.fieldContainerElement.current.offsetWidth);
     }
   };
 
@@ -79,7 +80,9 @@ class FieldContainer extends React.Component {
         {this.state.width > 399 &&
           <FieldLayout gridField={this.props.gridField}
             position={this.props.position}
-            width={this.state.width}/>
+            width={this.state.width}
+            forceUpdate={this.props.forceUpdate}
+            updateDoneFunc={this.props.updateDoneFunc}/>
         }
       </div>
     );

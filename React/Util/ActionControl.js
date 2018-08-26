@@ -14,26 +14,24 @@ import DirectionByTile from './DirectionByTile';
  }
   field: fieldMatrix,
 */
+
 const directions = {
-  U: {i: 1, a: 'Y'},
-  D: {i: -1, a: 'Y'},
-  R: {i: 1, a: 'X'},
-  L: {i: -1, a: 'X'},
+  U: {i: 1, a: 'Y', x: 0, y: -1},
+  D: {i: -1, a: 'Y', x: 0, y: 1},
+  R: {i: 1, a: 'X', x: 1, y: 0},
+  L: {i: -1, a: 'X', x: -1, y: 0},
 };
 
 const ActionControl = {
   move: function(intention, tile, fieldMatrix) {
-    var goTo = directions[intention];
+    console.log('Moving');
 
     return new Promise((resolve,reject) => {
       resolve(this.lookupIntent(intention, tile, fieldMatrix));
     })
-    .then((possibleIntent) => {
-
-    })
   },
 
-  place: function() {
+  place: function(intention, tile) {
     var align = directions[direction];
   },
 
@@ -54,29 +52,33 @@ const ActionControl = {
         reject(false);
       }
     })
-    .then((destinationInformation) => [
-
-    ])
   },
 
   lookupExit: function(intent, currentTile) {
-    var dbt = 'check' + currentTile;
-    return intent == origin ? true :
-      DirectionByTile[dbt](currentTile, intent) ? true : false;
+    var dbt = 'check' + currentTile.type;
+    var returner = intent == currentTile.direction ? true :
+      (DirectionByTile[dbt])(currentTile, intent) ? true : false;
+    return returner;
   },
 
   lookupDestination: function(intent, currentTile, fieldMatrix) {
     var returner = null;
-    var tile = fieldMatrix[currentTile.x][currentTile.y];
-    if (tile.tileType == 0) {
-      returner = 'new';
+    let x = currentTile.x + directions[intent].x;
+    let y = currentTile.y + directions[intent].y;
+    if (x < 0 || x > 18 || y < 0 || y > 18) {
+      returner = false;
     } else {
-      var entry = TileMath.numberToDirection[TileMath.plus(intent, 2)]
-      var dbt = 'check' + tile;
-      if (DirectionbyTile[dbt](currentTile, intent)) {
-        returner = tile;
+      var tile = fieldMatrix[x][y];
+      if (tile.tileType == '0') {
+        returner = intent;
       } else {
-        returner = false;
+        var entry = TileMath.numberToDirection[TileMath.plus(intent, 2)]
+        var dbt = 'check' + currentTile.type;
+        if (DirectionByTile[dbt](currentTile, intent)) {
+          returner = tile;
+        } else {
+          returner = false;
+        }
       }
     }
     return returner;

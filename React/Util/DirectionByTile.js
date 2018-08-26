@@ -5,9 +5,10 @@ const DirectionByTile = {
 
   checkI: function(tile, intent) {
     var dt = TileMath.directionToNumber;
-    return (tile.direction == intent) ? true :
-      TileMath.plus(dt[intent], 2) ? true :
+    var returner = (tile.direction == intent) ? true :
+      TileMath.plus(dt[intent], 2) == intent ? true :
       false;
+    return returner;
   },
 
   /*

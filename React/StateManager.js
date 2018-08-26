@@ -6,6 +6,8 @@ import TranslateDirectionToImage from './Util/TranslateDirectionToImage';
 import KeyInputs from './Util/KeyInputs';
 import ActionControl from './Util/ActionControl';
 
+import TileMath from './Util/TileMath';
+
 /**********Contents****************
  variables
   const
@@ -24,11 +26,11 @@ StateManager
 getters & setters
 **********************************/
 
-const arrows = {
-  U: true,
-  D: true,
-  L: true,
-  R: true,
+const directions = {
+  U: {i: -1, a: 'Y', x: 0, y: -1},
+  D: {i: 1, a: 'Y', x: 0, y: 1},
+  R: {i: 1, a: 'X', x: 1, y: 0},
+  L: {i: -1, a: 'X', x: -1, y: 0},
 };
 
 const deadTile = {
@@ -43,8 +45,10 @@ var placeOrMove = 'move'; // 'move' || 'place';
 
 var focusInput = false;
 var inputValue = '0';
+var forceUpdate = false;
+
 var xpos = 9;
-var ypos = 19;
+var ypos = 18;
 var currentTile = 'I'; // I || L || T || X
 var direction = 'U'; // U || D || L || R (absolute)
 var origin = 'D'; // U || D || L || R (absolute)
@@ -55,39 +59,30 @@ for (var i = 0; i < 19; i++) {
   for (var j = 0; j < 19; j++) {
     newArray.push(JSON.parse(JSON.stringify(deadTile)));
   }
-
+  null;
   fieldMatrix.push(newArray);
 }
+
 fieldMatrix[9][18] = {
   origin: 'D',
   direction: 'U',
   tileType: 'I',
 }
 
-// 20px tile minimum
-
 const StateManager = {
   getState: function() {
-    return {
-      field: {
-        pos: { xpos, ypos },
-        gridField: fieldMatrix,
-      },
-      info: {
-        pw: password,
-        err: error,
-        mode: placeOrMove,
-      },
-      keyField: inputValue,
-      focusOn: focusInput,
-    };
+    return getAppState();
   },
 
   setFocus: function(tof) {
     return setFocusInput(tof);
   },
 
-  attemptAction: function(e) {
+  toggleForceUpdate: function(fu) {
+    return setForceUpdate(fu);
+  },
+
+  attemptAction: function(e, callback) {
     if (!getLock()) {
       if (e) {
         setLock(true);
@@ -95,9 +90,11 @@ const StateManager = {
           resolve(KeyInputs.getAction(e));
         })
         .then((actionIntention) => {
+          console.log('intent');
+          console.log(actionIntention);
           var returner = null;
-          if (actionIntention in arrows) {
-            actionResult = ActionControl[getMode()](
+          if (actionIntention in directions) {
+            returner = ActionControl[getMode()](
               actionIntention,
               {
                 x: getX(),
@@ -110,22 +107,43 @@ const StateManager = {
             );
           } else {
             // . e b s
-            returner = actionIntention == 'e' ? initiatePlace() :
-            actionIntention == 's' ? changePlacer() :
-            actionIntention == 'b' ? initiateDelete() : null;
+            returner = actionIntention == 'e' ? this.initiatePlace() :
+            actionIntention == 's' ? this.changePlacer() :
+            actionIntention == 'b' ? this.initiateDelete() : null;
           }
+          console.log(returner);
           return returner;
-        }, (e) => {throw new Error('Invalid keypress')})
+        }, (e) => {console.log(e);
+          throw new Error('Invalid keypress')})
         .then((action) => {
-          var returner = null;
+          var returner;
+          var moveActions = {
+            U: true,
+            D: true,
+            L: true,
+            R: true,
+          };
+          console.log(action);
           if (action == 'done') {
             returner = true;
-          } else if (action == 'new') {
-            setMode('place');
-            // Invert exit direction
-            // default to I type
+          } else if (action in moveActions) {
+            console.log('Move to empty tile');
+            // Update move to empty slot
+            returner = this.changeSelectEmpty(action);
           } else if (action != false) {
+            console.log('Move to existing tile');
             // Update current info to confirm move
+          }
+          setLock(false);
+          return returner;
+        })
+        .then(function(alldone) {
+          console.log('Fire update');
+          console.log(alldone);
+          if (alldone) {
+            callback();
+          } else {
+            throw new Error('Action malfunction');
           }
         })
         .catch((e) => {
@@ -134,12 +152,35 @@ const StateManager = {
         })
       }
     }
+    return false;
   },
 
+
+  changeSelectEmpty: function(intent) {
+    console.log('Moving to empty tile');
+    setMode('place');
+    setOrigin(TileMath.numberToDirection[
+      TileMath.minus(TileMath.directionToNumber[intent],2)
+    ]);
+    console.log(intent);
+    setDirection(intent);
+    var change = directions[intent];
+    setX(change.x + getX());
+    setY(change.y + getY());
+    console.log(getX());
+    console.log(getY());
+    setCurrentTile('I');
+    return true;
+  },
+
+  changeSelectExist: function(intent) {
+
+  },
 
   // I || L || T || X
 
   changePlacer: function(points) {
+    console.log('Change placement tile');
     direction = points;
     switch (currentTile) {
       case 'I': {
@@ -166,11 +207,13 @@ const StateManager = {
   },
 
   initiateDelete: function() {
+    console.log('Start delete');
 
     return 'done';
   },
 
   initiatePlace: function() {
+    console.log('Attempt to place');
 
     return 'done';
   },
@@ -214,6 +257,15 @@ function setFocusInput(focus) {
 
 function getFocusInput() {
   return focusInput;
+}
+
+function setForceUpdate(force) {
+  forceUpdate = force != focusInput ? force : focusInput;
+  return 0;
+}
+
+function getForceUpdate() {
+  return forceUpdate;
 }
 
 function setInputValue(val) {
@@ -296,6 +348,23 @@ function getField(tile) {
   } else {
     return fieldMatrix;
   }
+}
+
+function getAppState() {
+  return {
+    field: {
+      pos: { xpos: xpos, ypos: ypos },
+      gridField: fieldMatrix,
+    },
+    info: {
+      pw: password,
+      err: error,
+      mode: placeOrMove,
+    },
+    keyField: inputValue,
+    focusOn: focusInput,
+    forceUpdate: forceUpdate,
+  };
 }
 
 export default StateManager;

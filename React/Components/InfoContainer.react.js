@@ -9,7 +9,7 @@ class InfoContainer extends React.Component {
     return (
       <div className='infocontainer'>
         <p>
-          Time to build this demo!
+          {this.props.mode}
         </p>
       </div>
     );

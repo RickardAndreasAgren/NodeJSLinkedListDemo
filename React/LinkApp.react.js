@@ -24,28 +24,21 @@ class LinkApp extends React.Component {
     }
 
     this.focusKeyInputRef = () => {
-      console.log('Focus: ');
-      console.log(this.state.focusOn);
       if (this.state.focusOn && this.keyInputRef) {
 
         this.keyInputRef.focus();
         StateManager.setFocus(false);
-        console.log('Focus disabled');
       }
     }
 
     this.sendMouseToInput = () => {
-      console.log('Focus ON');
-      console.log(this.keyInputRef);
       StateManager.setFocus(true);
       this.setState(StateManager.getState());
     }
   }
 
   componentWillUpdate() {
-    // This.state = StateManager.getState();
     console.log('LinkApp will update');
-    console.log(this.state);
   }
 
   componentDidMount() {
@@ -63,6 +56,12 @@ class LinkApp extends React.Component {
   handleKeyInput(e) {
     e.preventDefault();
     console.log('YA');
+    console.log(e);
+    StateManager.attemptAction({key: e.key, code: e.keyCode}, () => {
+      StateManager.toggleForceUpdate(true);
+      var newState = StateManager.getState();
+      this.setState(newState);
+    });
   }
 
   // Pass handle function for typing pw
@@ -70,6 +69,8 @@ class LinkApp extends React.Component {
   // InfoContainer: pw, error, mode
 
   render() {
+
+    console.log(this.state);
 
     return (
       <div className='total-screen main-container' >
@@ -89,10 +90,12 @@ class LinkApp extends React.Component {
         </div>
         <FieldContainer gridField={this.state.field.gridField}
           position={this.state.field.pos}
-          sendMouseFunc={this.sendMouseToInput}/>
+          forceUpdate={this.state.forceUpdate}
+          sendMouseFunc={this.sendMouseToInput}
+          updateDoneFunc={() => {StateManager.toggleForceUpdate(false)}}/>
         <InfoContainer password={this.state.info.password}
           error={this.state.info.error}
-          mode={this.state.mode}/>
+          mode={this.state.info.mode}/>
       </div>
     );
   }

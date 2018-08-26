@@ -57,7 +57,9 @@ var FieldContainer = function (_React$Component) {
     key: 'shouldComponentUpdate',
     value: function shouldComponentUpdate(nextProps, nextState) {
       var returner = true;
-      if (nextState.width == this.state.width) {
+      if (nextProps.forceUpdate) {
+        returner = true;
+      } else if (nextState.width == this.state.width) {
         if (nextProps.position.x == this.props.position.x && nextProps.position.y == this.props.position.y) {
           returner = false;
         }
@@ -74,9 +76,7 @@ var FieldContainer = function (_React$Component) {
     }
   }, {
     key: 'componentDidUpdate',
-    value: function componentDidUpdate() {
-      this.setState({ width: this.fieldContainerElement.current.offsetWidth });
-    }
+    value: function componentDidUpdate() {}
   }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
@@ -86,7 +86,7 @@ var FieldContainer = function (_React$Component) {
     key: 'checkWidth',
     value: function checkWidth() {
       if (this.fieldContainerElement) {
-        console.log(this.fieldContainerElement.current.offsetWidth);
+        // Console.log(this.fieldContainerElement.current.offsetWidth);
       }
     }
   }, {
@@ -109,7 +109,9 @@ var FieldContainer = function (_React$Component) {
           ref: this.fieldContainerElement },
         this.state.width > 399 && _react2.default.createElement(_FieldLayout2.default, { gridField: this.props.gridField,
           position: this.props.position,
-          width: this.state.width })
+          width: this.state.width,
+          forceUpdate: this.props.forceUpdate,
+          updateDoneFunc: this.props.updateDoneFunc })
       );
     }
   }]);
@@ -152,6 +154,8 @@ var FieldLayout = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (FieldLayout.__proto__ || Object.getPrototypeOf(FieldLayout)).call(this, props));
 
+    _this.shouldComponentUpdate = _this.shouldComponentUpdate.bind(_this);
+
     _this.getHeight = _this.getHeight.bind(_this);
     _this.getWidth = _this.getWidth.bind(_this);
     _this.buildMatrix = _this.buildMatrix.bind(_this);
@@ -163,9 +167,27 @@ var FieldLayout = function (_React$Component) {
     gridField
     position {xpos, ypos}
     width
+    forceUpdate
+    updateDoneFunc
   */
 
   _createClass(FieldLayout, [{
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      var returner = true;
+      if (nextProps.forceUpdate) {
+        returner = true;
+      } else if (this.state == nextState && this.props == nextProps) {
+        returner = false;
+      }
+      return returner;
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      this.props.updateDoneFunc();
+    }
+  }, {
     key: 'getHeight',
     value: function getHeight() {
       return this.props.gridField[0].length;
@@ -178,6 +200,7 @@ var FieldLayout = function (_React$Component) {
   }, {
     key: 'buildMatrix',
     value: function buildMatrix() {
+      console.log('Building matrix');
       console.log(this.props.gridField);
       var activeCell = this.props.position.xpos * this.getHeight() + this.props.position.ypos;
       var currentCell = 0;
@@ -273,7 +296,7 @@ var FieldTile = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        { className: tileClass },
+        { className: tileClass, x: this.props.x, y: this.props.y },
         _react2.default.createElement('div', { className: 't1 qd' }),
         _react2.default.createElement('div', { className: 't2 qu' }),
         _react2.default.createElement('div', { className: 't3 ql' }),
@@ -326,7 +349,7 @@ var InfoContainer = function (_React$Component) {
         _react2.default.createElement(
           'p',
           null,
-          'Time to build this demo!'
+          this.props.mode
         )
       );
     }
@@ -392,19 +415,14 @@ var LinkApp = function (_React$Component) {
     };
 
     _this.focusKeyInputRef = function () {
-      console.log('Focus: ');
-      console.log(_this.state.focusOn);
       if (_this.state.focusOn && _this.keyInputRef) {
 
         _this.keyInputRef.focus();
         _StateManager2.default.setFocus(false);
-        console.log('Focus disabled');
       }
     };
 
     _this.sendMouseToInput = function () {
-      console.log('Focus ON');
-      console.log(_this.keyInputRef);
       _StateManager2.default.setFocus(true);
       _this.setState(_StateManager2.default.getState());
     };
@@ -414,9 +432,7 @@ var LinkApp = function (_React$Component) {
   _createClass(LinkApp, [{
     key: 'componentWillUpdate',
     value: function componentWillUpdate() {
-      // This.state = StateManager.getState();
       console.log('LinkApp will update');
-      console.log(this.state);
     }
   }, {
     key: 'componentDidMount',
@@ -435,8 +451,16 @@ var LinkApp = function (_React$Component) {
   }, {
     key: 'handleKeyInput',
     value: function handleKeyInput(e) {
+      var _this2 = this;
+
       e.preventDefault();
       console.log('YA');
+      console.log(e);
+      _StateManager2.default.attemptAction({ key: e.key, code: e.keyCode }, function () {
+        _StateManager2.default.toggleForceUpdate(true);
+        var newState = _StateManager2.default.getState();
+        _this2.setState(newState);
+      });
     }
 
     // Pass handle function for typing pw
@@ -446,6 +470,8 @@ var LinkApp = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
+
+      console.log(this.state);
 
       return _react2.default.createElement(
         'div',
@@ -472,10 +498,14 @@ var LinkApp = function (_React$Component) {
         ),
         _react2.default.createElement(_FieldContainer2.default, { gridField: this.state.field.gridField,
           position: this.state.field.pos,
-          sendMouseFunc: this.sendMouseToInput }),
+          forceUpdate: this.state.forceUpdate,
+          sendMouseFunc: this.sendMouseToInput,
+          updateDoneFunc: function updateDoneFunc() {
+            _StateManager2.default.toggleForceUpdate(false);
+          } }),
         _react2.default.createElement(_InfoContainer2.default, { password: this.state.info.password,
           error: this.state.info.error,
-          mode: this.state.mode })
+          mode: this.state.info.mode })
       );
     }
   }]);
@@ -508,6 +538,10 @@ var _ActionControl = require('./Util/ActionControl');
 
 var _ActionControl2 = _interopRequireDefault(_ActionControl);
 
+var _TileMath = require('./Util/TileMath');
+
+var _TileMath2 = _interopRequireDefault(_TileMath);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**********Contents****************
@@ -528,11 +562,11 @@ StateManager
 getters & setters
 **********************************/
 
-var arrows = {
-  U: true,
-  D: true,
-  L: true,
-  R: true
+var directions = {
+  U: { i: -1, a: 'Y', x: 0, y: -1 },
+  D: { i: 1, a: 'Y', x: 0, y: 1 },
+  R: { i: 1, a: 'X', x: 1, y: 0 },
+  L: { i: -1, a: 'X', x: -1, y: 0 }
 };
 
 var deadTile = {
@@ -547,8 +581,10 @@ var placeOrMove = 'move'; // 'move' || 'place';
 
 var focusInput = false;
 var inputValue = '0';
+var forceUpdate = false;
+
 var xpos = 9;
-var ypos = 19;
+var ypos = 18;
 var currentTile = 'I'; // I || L || T || X
 var direction = 'U'; // U || D || L || R (absolute)
 var origin = 'D'; // U || D || L || R (absolute)
@@ -559,47 +595,43 @@ for (var i = 0; i < 19; i++) {
   for (var j = 0; j < 19; j++) {
     newArray.push(JSON.parse(JSON.stringify(deadTile)));
   }
-
+  null;
   fieldMatrix.push(newArray);
 }
+
 fieldMatrix[9][18] = {
   origin: 'D',
   direction: 'U',
   tileType: 'I'
+};
 
-  // 20px tile minimum
-
-};var StateManager = {
+var StateManager = {
   getState: function getState() {
-    return {
-      field: {
-        pos: { xpos: xpos, ypos: ypos },
-        gridField: fieldMatrix
-      },
-      info: {
-        pw: password,
-        err: error,
-        mode: placeOrMove
-      },
-      keyField: inputValue,
-      focusOn: focusInput
-    };
+    return getAppState();
   },
 
   setFocus: function setFocus(tof) {
     return setFocusInput(tof);
   },
 
-  attemptAction: function attemptAction(e) {
+  toggleForceUpdate: function toggleForceUpdate(fu) {
+    return setForceUpdate(fu);
+  },
+
+  attemptAction: function attemptAction(e, callback) {
+    var _this = this;
+
     if (!getLock()) {
       if (e) {
         setLock(true);
         return new Promise(function (resolve, reject) {
           resolve(_KeyInputs2.default.getAction(e));
         }).then(function (actionIntention) {
+          console.log('intent');
+          console.log(actionIntention);
           var returner = null;
-          if (actionIntention in arrows) {
-            actionResult = _ActionControl2.default[getMode()](actionIntention, {
+          if (actionIntention in directions) {
+            returner = _ActionControl2.default[getMode()](actionIntention, {
               x: getX(),
               y: getY(),
               origin: getOrigin(),
@@ -608,21 +640,41 @@ fieldMatrix[9][18] = {
             }, getField());
           } else {
             // . e b s
-            returner = actionIntention == 'e' ? initiatePlace() : actionIntention == 's' ? changePlacer() : actionIntention == 'b' ? initiateDelete() : null;
+            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer() : actionIntention == 'b' ? _this.initiateDelete() : null;
           }
+          console.log(returner);
           return returner;
         }, function (e) {
+          console.log(e);
           throw new Error('Invalid keypress');
         }).then(function (action) {
-          var returner = null;
+          var returner;
+          var moveActions = {
+            U: true,
+            D: true,
+            L: true,
+            R: true
+          };
+          console.log(action);
           if (action == 'done') {
             returner = true;
-          } else if (action == 'new') {
-            setMode('place');
-            // Invert exit direction
-            // default to I type
+          } else if (action in moveActions) {
+            console.log('Move to empty tile');
+            // Update move to empty slot
+            returner = _this.changeSelectEmpty(action);
           } else if (action != false) {
+            console.log('Move to existing tile');
             // Update current info to confirm move
+          }
+          setLock(false);
+          return returner;
+        }).then(function (alldone) {
+          console.log('Fire update');
+          console.log(alldone);
+          if (alldone) {
+            callback();
+          } else {
+            throw new Error('Action malfunction');
           }
         }).catch(function (e) {
           console.log('Resolving action failed');
@@ -630,11 +682,30 @@ fieldMatrix[9][18] = {
         });
       }
     }
+    return false;
   },
+
+  changeSelectEmpty: function changeSelectEmpty(intent) {
+    console.log('Moving to empty tile');
+    setMode('place');
+    setOrigin(_TileMath2.default.numberToDirection[_TileMath2.default.minus(_TileMath2.default.directionToNumber[intent], 2)]);
+    console.log(intent);
+    setDirection(intent);
+    var change = directions[intent];
+    setX(change.x + getX());
+    setY(change.y + getY());
+    console.log(getX());
+    console.log(getY());
+    setCurrentTile('I');
+    return true;
+  },
+
+  changeSelectExist: function changeSelectExist(intent) {},
 
   // I || L || T || X
 
   changePlacer: function changePlacer(points) {
+    console.log('Change placement tile');
     direction = points;
     switch (currentTile) {
       case 'I':
@@ -666,11 +737,13 @@ fieldMatrix[9][18] = {
   },
 
   initiateDelete: function initiateDelete() {
+    console.log('Start delete');
 
     return 'done';
   },
 
   initiatePlace: function initiatePlace() {
+    console.log('Attempt to place');
 
     return 'done';
   }
@@ -714,6 +787,15 @@ function setFocusInput(focus) {
 
 function getFocusInput() {
   return focusInput;
+}
+
+function setForceUpdate(force) {
+  forceUpdate = force != focusInput ? force : focusInput;
+  return 0;
+}
+
+function getForceUpdate() {
+  return forceUpdate;
 }
 
 function setInputValue(val) {
@@ -798,9 +880,26 @@ function getField(tile) {
   }
 }
 
+function getAppState() {
+  return {
+    field: {
+      pos: { xpos: xpos, ypos: ypos },
+      gridField: fieldMatrix
+    },
+    info: {
+      pw: password,
+      err: error,
+      mode: placeOrMove
+    },
+    keyField: inputValue,
+    focusOn: focusInput,
+    forceUpdate: forceUpdate
+  };
+}
+
 exports.default = StateManager;
 
-},{"./Util/ActionControl":7,"./Util/ClientAPIHelper":8,"./Util/KeyInputs":10,"./Util/TranslateDirectionToImage":12}],7:[function(require,module,exports){
+},{"./Util/ActionControl":7,"./Util/ClientAPIHelper":8,"./Util/KeyInputs":10,"./Util/TileMath":11,"./Util/TranslateDirectionToImage":12}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -829,25 +928,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  }
   field: fieldMatrix,
 */
+
 var directions = {
-  U: { i: 1, a: 'Y' },
-  D: { i: -1, a: 'Y' },
-  R: { i: 1, a: 'X' },
-  L: { i: -1, a: 'X' }
+  U: { i: 1, a: 'Y', x: 0, y: -1 },
+  D: { i: -1, a: 'Y', x: 0, y: 1 },
+  R: { i: 1, a: 'X', x: 1, y: 0 },
+  L: { i: -1, a: 'X', x: -1, y: 0 }
 };
 
 var ActionControl = {
   move: function move(intention, tile, fieldMatrix) {
     var _this = this;
 
-    var goTo = directions[intention];
+    console.log('Moving');
 
     return new Promise(function (resolve, reject) {
       resolve(_this.lookupIntent(intention, tile, fieldMatrix));
-    }).then(function (possibleIntent) {});
+    });
   },
 
-  place: function place() {
+  place: function place(intention, tile) {
     var align = directions[direction];
   },
 
@@ -867,28 +967,33 @@ var ActionControl = {
       } else {
         reject(false);
       }
-    }).then(function (destinationInformation) {
-      return [];
     });
   },
 
   lookupExit: function lookupExit(intent, currentTile) {
-    var dbt = 'check' + currentTile;
-    return intent == origin ? true : _DirectionByTile2.default[dbt](currentTile, intent) ? true : false;
+    var dbt = 'check' + currentTile.type;
+    var returner = intent == currentTile.direction ? true : _DirectionByTile2.default[dbt](currentTile, intent) ? true : false;
+    return returner;
   },
 
   lookupDestination: function lookupDestination(intent, currentTile, fieldMatrix) {
     var returner = null;
-    var tile = fieldMatrix[currentTile.x][currentTile.y];
-    if (tile.tileType == 0) {
-      returner = 'new';
+    var x = currentTile.x + directions[intent].x;
+    var y = currentTile.y + directions[intent].y;
+    if (x < 0 || x > 18 || y < 0 || y > 18) {
+      returner = false;
     } else {
-      var entry = _TileMath2.default.numberToDirection[_TileMath2.default.plus(intent, 2)];
-      var dbt = 'check' + tile;
-      if (DirectionbyTile[dbt](currentTile, intent)) {
-        returner = tile;
+      var tile = fieldMatrix[x][y];
+      if (tile.tileType == '0') {
+        returner = intent;
       } else {
-        returner = false;
+        var entry = _TileMath2.default.numberToDirection[_TileMath2.default.plus(intent, 2)];
+        var dbt = 'check' + currentTile.type;
+        if (_DirectionByTile2.default[dbt](currentTile, intent)) {
+          returner = tile;
+        } else {
+          returner = false;
+        }
       }
     }
     return returner;
@@ -1071,7 +1176,8 @@ var DirectionByTile = {
 
   checkI: function checkI(tile, intent) {
     var dt = _TileMath2.default.directionToNumber;
-    return tile.direction == intent ? true : _TileMath2.default.plus(dt[intent], 2) ? true : false;
+    var returner = tile.direction == intent ? true : _TileMath2.default.plus(dt[intent], 2) == intent ? true : false;
+    return returner;
   },
 
   /*
@@ -1108,11 +1214,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var KeyInputs = {
   getAction: function getAction(keyPressed) {
-    if (keyPressed.code = 'Space') {
-      return 's';
-    }
+    console.log(keyPressed);
 
-    if (keyPressed.key in keyPressList) {
+    if (keyPressed.key in this.keyPressList) {
       console.log(this.keyPressList[keyPressed.key]);
       return this.keyPressList[keyPressed.key];
     } else {
@@ -1121,6 +1225,8 @@ var KeyInputs = {
   },
 
   keyPressList: {
+    ' ': 's',
+    Shift: 't',
     Enter: 'e',
     Control: 'e',
     Backspace: 'b',

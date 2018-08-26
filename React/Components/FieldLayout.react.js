@@ -6,6 +6,8 @@ class FieldLayout extends React.Component {
   constructor(props) {
     super(props);
 
+    this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
+
     this.getHeight = this.getHeight.bind(this);
     this.getWidth = this.getWidth.bind(this);
     this.buildMatrix = this.buildMatrix.bind(this);
@@ -16,7 +18,23 @@ class FieldLayout extends React.Component {
     gridField
     position {xpos, ypos}
     width
+    forceUpdate
+    updateDoneFunc
   */
+
+  shouldComponentUpdate(nextProps, nextState) {
+    var returner = true;
+    if (nextProps.forceUpdate) {
+      returner = true;
+    } else if (this.state == nextState && this.props == nextProps) {
+      returner = false;
+    }
+    return returner;
+  }
+
+  componentDidUpdate() {
+    this.props.updateDoneFunc();
+  }
 
   getHeight() {
     return this.props.gridField[0].length;
@@ -27,6 +45,7 @@ class FieldLayout extends React.Component {
   }
 
   buildMatrix() {
+    console.log('Building matrix');
     console.log(this.props.gridField);
     var activeCell = this.props.position.xpos * this.getHeight() +
       this.props.position.ypos;

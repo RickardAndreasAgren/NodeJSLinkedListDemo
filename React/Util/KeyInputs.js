@@ -6,11 +6,9 @@
 
 const KeyInputs = {
   getAction: function(keyPressed) {
-    if (keyPressed.code = 'Space') {
-      return 's';
-    }
+    console.log(keyPressed);
 
-    if (keyPressed.key in keyPressList) {
+    if (keyPressed.key in this.keyPressList) {
       console.log(this.keyPressList[keyPressed.key]);
       return this.keyPressList[keyPressed.key];
     } else {
@@ -19,6 +17,8 @@ const KeyInputs = {
   },
 
   keyPressList: {
+    ' ': 's',
+    Shift: 't',
     Enter: 'e',
     Control: 'e',
     Backspace: 'b',

@@ -1,12 +1,9 @@
 
-
-
 Layout
 -Calc active width
 Board controller
 State management
--In placement, arrow towards origin exits
-  into move
+-Allow movement from empty into placed
 Grid management
 Key
 Piece types

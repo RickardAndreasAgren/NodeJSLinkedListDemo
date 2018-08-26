@@ -19,6 +19,7 @@ body {
   border-width: 3px;
   float: left;
   min-width: 400px;
+  max-width: 736px;
 }
 
 .fieldlayout {
