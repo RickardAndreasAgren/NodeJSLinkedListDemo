@@ -1,8 +1,6 @@
 
 import ClientAPIHelper from './Util/ClientAPIHelper';
 
-import TranslateDirectionToImage from './Util/TranslateDirectionToImage';
-
 import KeyInputs from './Util/KeyInputs';
 import ActionControl from './Util/ActionControl';
 
@@ -36,7 +34,7 @@ const directions = {
 const deadTile = {
   origin: '0',
   direction: '0',
-  tileType: '0',
+  tileType: 'e',
 }
 
 var password = '';
@@ -134,11 +132,12 @@ const StateManager = {
           } else if (action != false) {
             console.log('Move to existing tile');
             // Update current info to confirm move
+            returner = this.changeSelectExist(action);
           }
-          setLock(false);
           return returner;
         })
         .then(function(alldone) {
+          setLock(false);
           console.log('Fire update');
           console.log(alldone);
           if (alldone) {
@@ -159,23 +158,73 @@ const StateManager = {
 
   changeSelectEmpty: function(intent) {
     console.log('Moving to empty tile');
-    setMode('place');
-    setOrigin(TileMath.getDirection(
-      TileMath.minus(TileMath.getNumber(intent), 2)
-    ));
-    console.log(intent);
-    setDirection(intent);
-    var change = directions[intent];
-    setX(change.x + getX());
-    setY(change.y + getY());
-    console.log(getX());
-    console.log(getY());
-    setCurrentTile('I');
-    return true;
+    return new Promise((resolve,reject) => {
+      resolve(setMode('place'));
+    })
+    .then(function(done) {
+      return setOrigin(TileMath.getDirection(
+        TileMath.minus(TileMath.getNumber(intent), 2)
+      ));
+    })
+    .then(function(done) {
+      console.log(intent);
+      setDirection(intent);
+      var change = directions[intent];
+      setX(change.x + getX());
+      setY(change.y + getY());
+      console.log(getX());
+      console.log(getY());
+      let returner = setCurrentTile('I');
+      return returner;
+    })
+    .then(function(beO) {
+      var returner = null;
+      if (beO == 0) {
+        returner = true;
+      } else {
+        returner = false;
+      }
+      return returner;
+    })
+    .catch(function(err) {
+      console.log('Failed to move to empty tile');
+      console.log(err);
+    })
   },
 
   changeSelectExist: function(intent) {
-
+    console.log('Moving to active tile');
+    return new Promise((resolve,reject) => {
+      resolve(setMode('move'));
+    })
+    .then(function(done) {
+      var change = directions[intent];
+      setY(change.x + getX());
+      setY(change.y + getY());
+    })
+    .then(function(done) {
+      return getField(null, getX(), getY());
+    })
+    .then(function(movedInto) {
+      var returner = [];
+      returner.push(setDirection(movedInto.direction));
+      returner.push(setOrigin(movedInto.origin));
+      returner.push(setCurrentTile(movedInto.tileType));
+      return returner;
+    })
+    .then(function(updated) {
+      var returner;
+      if (updated[0] == 0 && updated[1] == 1 && updated[2]) {
+        returner = true;
+      } else {
+        returner = false;
+      }
+      return returner;
+    })
+    .catch(function(err) {
+      console.log('Failed to move to existing tile');
+      console.log(err);
+    })
   },
 
   // I || L || T || X
@@ -348,12 +397,16 @@ function setField(x,y,tileUpdate) {
   fieldUpdate[x][y] = tileUpdate;
 }
 
-function getField(tile) {
+function getField(tile, x, y) {
+  var returner;
   if (tile) {
-    return fieldMatrix[tile.x][tile.y];
+    returner = fieldMatrix[tile.x][tile.y];
+  } else if (x && y) {
+    returner = fieldMatrix[x][y];
   } else {
-    return fieldMatrix;
+    returner = fieldMatrix;
   }
+  return returner;
 }
 
 function getAppState() {

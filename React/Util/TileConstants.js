@@ -102,6 +102,13 @@ const TileConstants = {
     t4: 'qu ql',
   },
 
+  empty: {
+    display: 'e',
+    t1: '',
+    t2: '',
+    t3: '',
+    t4: '',
+  },
 };
 
 export default TileConstants;

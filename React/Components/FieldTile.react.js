@@ -1,6 +1,7 @@
 
 import React from 'react';
 
+import TranslatePropsToTile from '../Util/TranslatePropsToTile';
 
 class FieldTile extends React.Component {
   constructor(props) {
@@ -21,11 +22,22 @@ class FieldTile extends React.Component {
   */
 
   componentDidMount() {
-    this.setState({ displayTile: })
+
+    if (this.props.tileType && !this.state.display) {
+      this.setState(TranslatePropsToTile.translateTile(
+        this.props.origin,
+        this.props.direction,
+        this.props.tileType
+      ));
+    }
   }
 
   componentDidUpdate() {
-
+    this.setState(TranslatePropsToTile.translateTile(
+      this.props.origin,
+      this.props.direction,
+      this.props.tileType
+    ));
   }
 
   render() {
