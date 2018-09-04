@@ -1,6 +1,9 @@
 
 
 FieldTile proper display
+  Display: absolute
+  Data: Relative
+    Create interpretor file
 Placing tile display & toggle
 -Allow movement from empty into origin
 ActionControl check if type '0',

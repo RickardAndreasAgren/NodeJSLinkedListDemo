@@ -8,11 +8,19 @@ const TileMath = {
     L: 4,
   },
 
+  getNumber: function(direction) {
+    return this.directionToNumber[direction];
+  },
+
   numberToDirection: {
     1: 'U',
     2: 'R',
     3: 'D',
     4: 'L',
+  },
+
+  getDirection: function(number) {
+    return this.numberToDirection[number];
   },
 
   plus: function(i, a) {

@@ -1,4 +1,6 @@
 
+import ReactConstants from '../ReactConstants';
+
 import TileMath from './TileMath';
 import DirectionByTile from './DirectionByTile';
 
@@ -14,13 +16,6 @@ import DirectionByTile from './DirectionByTile';
  }
   field: fieldMatrix,
 */
-
-const directions = {
-  U: {i: 1, a: 'Y', x: 0, y: -1},
-  D: {i: -1, a: 'Y', x: 0, y: 1},
-  R: {i: 1, a: 'X', x: 1, y: 0},
-  L: {i: -1, a: 'X', x: -1, y: 0},
-};
 
 const ActionControl = {
   move: function(intention, tile, fieldMatrix) {
@@ -63,16 +58,17 @@ const ActionControl = {
 
   lookupDestination: function(intent, currentTile, fieldMatrix) {
     var returner = null;
-    let x = currentTile.x + directions[intent].x;
-    let y = currentTile.y + directions[intent].y;
-    if (x < 0 || x > 18 || y < 0 || y > 18) {
+    let x = currentTile.x + ReactConstants.getDirections(intent).x;
+    let y = currentTile.y + ReactConstants.getDirections(intent).y;
+    if (x < 0 || x > (ReactConstants.getSize() - 1) || y < 0
+      || y > ReactConstants.getSize() - 1) {
       returner = false;
     } else {
       var tile = fieldMatrix[x][y];
       if (tile.tileType == '0') {
         returner = intent;
       } else {
-        var entry = TileMath.numberToDirection[TileMath.plus(intent, 2)]
+        var entry = TileMath.getDirection(TileMath.plus(intent, 2));
         var dbt = 'check' + currentTile.type;
         if (DirectionByTile[dbt](currentTile, intent)) {
           returner = tile;

@@ -160,9 +160,9 @@ const StateManager = {
   changeSelectEmpty: function(intent) {
     console.log('Moving to empty tile');
     setMode('place');
-    setOrigin(TileMath.numberToDirection[
-      TileMath.minus(TileMath.directionToNumber[intent],2)
-    ]);
+    setOrigin(TileMath.getDirection(
+      TileMath.minus(TileMath.getNumber(intent), 2)
+    ));
     console.log(intent);
     setDirection(intent);
     var change = directions[intent];
