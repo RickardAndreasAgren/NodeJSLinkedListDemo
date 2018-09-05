@@ -7,7 +7,9 @@ class FieldTile extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {};
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
   }
 
@@ -17,30 +19,65 @@ class FieldTile extends React.Component {
   y
   origin
   direction
-  tileType
+  tile
   selected
   */
 
   componentDidMount() {
-
-    if (this.props.tileType && !this.state.display) {
-      this.setState(TranslatePropsToTile.translateTile(
-        this.props.origin,
-        this.props.direction,
-        this.props.tileType
-      ));
+    this.props.tile != 'e' ? console.log(this.props.tile) : null;
+    if (this.props.tile && !this.state.display) {
+      var _this = this;
+      this.props.tile != 'e' ? console.log('Tile did mount and set') : null;
+      new Promise((resolve,reject) => {
+        var returner = TranslatePropsToTile.translateTile(
+          this.props.origin,
+          this.props.direction,
+          this.props.tile
+        );
+        resolve(returner);
+      })
+      .then(function(setThis) {
+        _this.setState(setThis);
+      })
+      .catch(function(err) {
+        console.log('Tile updated issue');
+        console.log(err);
+      })
     }
   }
 
-  componentDidUpdate() {
-    this.setState(TranslatePropsToTile.translateTile(
-      this.props.origin,
-      this.props.direction,
-      this.props.tileType
-    ));
+  shouldComponentUpdate(nextProps,nextState) {
+    return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    this.props.tile != 'e' ? console.log('Tile did update') : null;
+    if (prevProps.tile != this.props.tile) {
+      var _this = this;
+      this.props.tile != 'e' ? console.log('Tile did update and set') : null;
+      this.props.tile != 'e' ? console.log(this.props) : null;
+      this.props.tile != 'e' ? console.log(this.state) : null;
+      return new Promise((resolve,reject) => {
+        var returner = TranslatePropsToTile.translateTile(
+          this.props.origin,
+          this.props.direction,
+          this.props.tile
+        );
+        resolve(returner);
+      })
+      .then(function(setThis) {
+        _this.setState(setThis);
+        return false;
+      })
+      .catch(function(err) {
+        console.log('Tile updated issue');
+        console.log(err);
+      })
+    }
   }
 
   render() {
+    this.props.tile != 'e' ? console.log('Tile rendered') : null;
     var selected = this.props.selected ? this.props.selected : false;
 
     var tileClass = selected ? 'tile quad selected' : 'tile quad';

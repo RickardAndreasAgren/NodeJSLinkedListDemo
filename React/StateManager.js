@@ -47,28 +47,31 @@ var forceUpdate = false;
 
 var xpos = 9;
 var ypos = 18;
-var currentTile = 'I'; // I || L || T || X
+var currentTile = 'I'; // I || L || T || X || e
 var direction = 'U'; // U || D || L || R (absolute)
 var origin = 'D'; // U || D || L || R (absolute)
 var lock = false;
 var fieldMatrix = [];
-for (var i = 0; i < 19; i++) {
-  var newArray = [];
-  for (var j = 0; j < 19; j++) {
-    newArray.push(JSON.parse(JSON.stringify(deadTile)));
-  }
-  null;
-  fieldMatrix.push(newArray);
-}
 
-fieldMatrix[9][18] = {
-  origin: 'D',
-  direction: 'U',
-  tileType: 'I',
-}
+
+
 
 const StateManager = {
-  getState: function() {
+  getState: function(init) {
+    if (init == 1) {
+      for (var i = 0; i < 19; i++) {
+        var newArray = [];
+        for (var j = 0; j < 19; j++) {
+          newArray.push(JSON.parse(JSON.stringify(deadTile)));
+        };
+        fieldMatrix.push(newArray);
+      }
+    }
+    fieldMatrix[9][18] = {
+      origin: 'D',
+      direction: 'U',
+      tileType: 'I',
+    }
     return getAppState();
   },
 
@@ -91,7 +94,15 @@ const StateManager = {
           console.log('intent');
           console.log(actionIntention);
           var returner = null;
-          if (actionIntention in directions) {
+          console.log(getCurrentTile());
+          if (getCurrentTile() == 'e' && actionIntention in directions &&
+            getMode() == 'move') {
+            if (actionIntention == getOrigin()) {
+              returner = 'E' + actionIntention;
+            } else {
+              returner = false;
+            }
+          } else if (actionIntention in directions) {
             returner = ActionControl[getMode()](
               actionIntention,
               {
@@ -125,15 +136,21 @@ const StateManager = {
           console.log(action);
           if (action == 'done') {
             returner = true;
-          } else if (action in moveActions) {
+          } else if (action[0] == 'P' && action[1] in moveActions) {
+            console.log('Changing tile direction');
+
+            returner = this.changePlaceDirection(action);
+          } else if (action[0] != 'E' && action[0] in moveActions) {
             console.log('Move to empty tile');
             // Update move to empty slot
             returner = this.changeSelectEmpty(action);
-          } else if (action != false) {
+          } else if (action[1] in moveActions) {
             console.log('Move to existing tile');
             // Update current info to confirm move
-            returner = this.changeSelectExist(action);
+            returner = this.changeSelectExist(action[1]);
           }
+          console.log(getX());
+          console.log(getY());
           return returner;
         })
         .then(function(alldone) {
@@ -174,11 +191,12 @@ const StateManager = {
       setY(change.y + getY());
       console.log(getX());
       console.log(getY());
-      let returner = setCurrentTile('I');
+      let returner = setCurrentTile('e');
       return returner;
     })
     .then(function(beO) {
       var returner = null;
+      console.log(beO);
       if (beO == 0) {
         returner = true;
       } else {
@@ -194,13 +212,16 @@ const StateManager = {
 
   changeSelectExist: function(intent) {
     console.log('Moving to active tile');
+    console.log(intent);
     return new Promise((resolve,reject) => {
       resolve(setMode('move'));
     })
     .then(function(done) {
       var change = directions[intent];
-      setY(change.x + getX());
+      setX(change.x + getX());
       setY(change.y + getY());
+      console.log(getX());
+      console.log(getY());
     })
     .then(function(done) {
       return getField(null, getX(), getY());
@@ -214,7 +235,7 @@ const StateManager = {
     })
     .then(function(updated) {
       var returner;
-      if (updated[0] == 0 && updated[1] == 1 && updated[2]) {
+      if (updated[0] == 0 && updated[1] == 0 && updated[2] == 0) {
         returner = true;
       } else {
         returner = false;
@@ -254,6 +275,11 @@ const StateManager = {
       }
     }
     return 'done';
+  },
+
+  changePlaceDirection: function(action) {
+
+    return false;
   },
 
   changeMode: function() {

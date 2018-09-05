@@ -10,7 +10,7 @@ class LinkApp extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = StateManager.getState();
+    this.state = StateManager.getState(1);
     this.keyInputRef = null;
 
     this.componentWillUpdate = this.componentWillUpdate.bind(this);

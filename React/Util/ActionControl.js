@@ -24,11 +24,21 @@ const ActionControl = {
     return new Promise((resolve,reject) => {
       resolve(this.lookupIntent(intention, tile, fieldMatrix));
     })
+    .catch(function(err) {
+      console.log('Not allowed');
+      return false;
+    })
   },
 
   place: function(intention, tile) {
     // Change tile orientation to be placed
-    return 0;
+    return new Promise((resolve,reject) => {
+      resolve(this.);
+    })
+    .catch(function(err) {
+      console.log('Not allowed');
+      return false;
+    })
   },
 
   lookupIntent: function(intent, currentTile, fieldMatrix) {
@@ -39,6 +49,8 @@ const ActionControl = {
         destinationInformation = this.lookupDestination(intent,
           currentTile, fieldMatrix
         );
+        console.log('Intent DI ');
+        console.log(destinationInformation);
         if (!destinationInformation) {
           reject(false);
         } else {
@@ -54,6 +66,8 @@ const ActionControl = {
     var dbt = 'check' + currentTile.type;
     var returner = intent == currentTile.direction ? true :
       (DirectionByTile[dbt])(currentTile, intent) ? true : false;
+    console.log('Exit is ');
+    console.log(returner);
     return returner;
   },
 
@@ -66,7 +80,7 @@ const ActionControl = {
       returner = false;
     } else {
       var tile = fieldMatrix[x][y];
-      if (tile.tileType == '0') {
+      if (tile.tileType == 'e') {
         returner = intent;
       } else {
         var entry = TileMath.getDirection(TileMath.plus(intent, 2));
@@ -78,8 +92,12 @@ const ActionControl = {
         }
       }
     }
+    console.log('Destination is ');
+    console.log(returner);
     return returner;
   },
+
+
 }
 
 export default ActionControl;

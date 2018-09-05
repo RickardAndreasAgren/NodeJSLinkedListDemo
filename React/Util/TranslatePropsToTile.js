@@ -17,16 +17,17 @@ const TranslatePropsToTile = {
       resolve(this.defineByType(origin, direction, type));
     })
     .then(function(tileString) {
-      var returner = null;
+      tileString != 'empty' ? console.log('Tilestring established') : null;
       if (tileString) {
-        returner = TileConstants[tileString];
+        return TileConstants[tileString];
       } else {
         throw new Error('Failed to interpret tile');
       }
-    })
+    });
   },
 
   defineByType(origin, direction, type) {
+    type != 'e' ? console.log('Defining type') : null;
     var returner = null;
     switch (type) {
       case 'I': {
@@ -46,12 +47,18 @@ const TranslatePropsToTile = {
         returner = 'crossing';
         break;
       }
+      case 'e': {
+        returner = 'empty';
+        break;
+      }
       default: {
         console.log('This is not a place the code should find.');
         throw new Error('Invalid type');
         break;
       }
     }
+    type != 'e' ? console.log('Finish definition by type') : null;
+    type != 'e' ? console.log(returner) : null;
     return returner;
   },
 
