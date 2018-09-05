@@ -27,6 +27,7 @@ const ActionControl = {
   },
 
   place: function(intention, tile) {
+    // Change tile orientation to be placed
     return 0;
   },
 

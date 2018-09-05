@@ -1058,6 +1058,7 @@ var ActionControl = {
   },
 
   place: function place(intention, tile) {
+    // Change tile orientation to be placed
     return 0;
   },
 
@@ -1537,6 +1538,10 @@ var _TileConstants = require('./TileConstants');
 
 var _TileConstants2 = _interopRequireDefault(_TileConstants);
 
+var _TileMath = require('./TileMath');
+
+var _TileMath2 = _interopRequireDefault(_TileMath);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* .
@@ -1547,14 +1552,79 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var TranslatePropsToTile = {
 
-  translateTile: function translateTile(origin, direction, type) {}
   // Take tile info and return state
+  translateTile: function translateTile(origin, direction, type) {
+    var _this = this;
+
+    return new Promise(function (resolve, reject) {
+      resolve(_this.defineByType(origin, direction, type));
+    }).then(function (tileString) {
+      var returner = null;
+      if (tileString) {
+        returner = _TileConstants2.default[tileString];
+      } else {
+        throw new Error('Failed to interpret tile');
+      }
+    });
+  },
+
+  defineByType: function defineByType(origin, direction, type) {
+    var returner = null;
+    switch (type) {
+      case 'I':
+        {
+          returner = origin == 'U' || origin == 'D' ? 'vertical' : origin == 'L' || origin == 'R' ? 'horizontal' : 'empty';
+          break;
+        }
+      case 'L':
+        {
+          returner = this.translateL(origin, direction);
+          break;
+        }
+      case 'T':
+        {
+          returner = this.translateT(origin, direction);
+          break;
+        }
+      case 'X':
+        {
+          returner = 'crossing';
+          break;
+        }
+      default:
+        {
+          console.log('This is not a place the code should find.');
+          throw new Error('Invalid type');
+          break;
+        }
+    }
+    return returner;
+  },
+
+
+  translateL: function translateL(origin, direction) {
+    var options = {
+      1: { 2: 'upright', 4: 'upleft' },
+      2: { 1: 'upright', 3: 'downright' },
+      3: { 2: 'downright', 4: 'downleft' },
+      4: { 1: 'upleft', 3: 'downleft' }
+    };
+    return options[_TileMath2.default.getNumber(origin)][_TileMath2.default.getNumber(direction)];
+  },
+
+  /*
+    In a T, direction can not be opposite. O=D means splitting T.
+  */
+
+  translateT: function translateT(origin, direction) {
+    var returner = null;
+  }
 
 };
 
 exports.default = TranslatePropsToTile;
 
-},{"./TileConstants":12}],15:[function(require,module,exports){
+},{"./TileConstants":12,"./TileMath":13}],15:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
