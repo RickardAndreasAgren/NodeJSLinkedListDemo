@@ -103,15 +103,10 @@ const StateManager = {
               returner = false;
             }
           } else if (actionIntention in directions) {
+            var tile = getFullTile();
             returner = ActionControl[getMode()](
               actionIntention,
-              {
-                x: getX(),
-                y: getY(),
-                origin: getOrigin(),
-                direction: getDirection(),
-                type: getCurrentTile(),
-              },
+              tile,
               getField(),
             );
           } else {
@@ -134,7 +129,7 @@ const StateManager = {
             R: true,
           };
           console.log(action);
-          if (action == 'done') {
+          if (action.change && action.change == 'done') {
             returner = true;
           } else if (action[0] == 'P' && action[1] in moveActions) {
             console.log('Changing tile direction');
@@ -250,41 +245,78 @@ const StateManager = {
 
   // I || L || T || X
 
-  changePlacer: function(points) {
+  changePlacer: function(intent) {
     console.log('Change placement tile');
-    direction = points;
-    switch (currentTile) {
-      case 'I': {
-        setCurrentTile('L');
-        break;
-      }
-      case 'L': {
-        setCurrentTile('T');
-        break;
-      }
-      case 'T': {
-        setCurrentTile('X');
-        break;
-      }
-      case 'X': {
-        setCurrentTile('I');
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-    return 'done';
+    return ActionControl['place'](
+      (hasIntent = intent ? intent : false),
+      getFullTile(),
+      getField(),
+    );
   },
 
-  changePlaceDirection: function(action) {
-
-    return false;
+  changePlaceDirection: function(intent) {
+    var _this = this;
+    return new Promise((resolve,reject) => {
+      if (!intent) {
+        reject('')
+      } else {
+        resolve(_this.changePlacer(intent));
+      }
+    })
+    .then(function(tileInfo) {
+      var returner = null;
+      if (tileInfo) {
+        // Set all new tile info
+        returner = true;
+      } else {
+        returner = false;
+      }
+      return returner;
+    })
+    .catch(function(err) {
+      console.log('Failed to prep placing tile when changing mode');
+      console.log(err);
+      return false;
+    })
   },
 
   changeMode: function() {
-    setMode();
-    return 'done';
+    var _this = this;
+    return new Promise((resolve,reject) => {
+      return setMode();
+    })
+    .then(function(modeWasSet) {
+      var returner = null;
+      if (modeWasSet == 0) {
+        if (getMode() == 'place') {
+          returner = _this.changePlacer(TileMath.getDirection(
+            TileMath.plus(
+              TileMath.getNumber(getOrigin(),2)
+            )
+          ))
+        } else if (getMode() == 'move') {
+          // Set current info by fetching from matrix
+        }
+      } else {
+        returner = false;
+      }
+      return returner;
+    })
+    .then(function(proceed) {
+      return new Promise((resolve,reject) => {
+        if (!proceed) {
+          reject('Setting placer failed');
+        } else {
+          // Set all new tile info
+          resolve(true)
+        }
+      })
+    })
+    .catch(function(err) {
+      console.log('Failed to prep placing tile when changing mode');
+      console.log(err);
+      return false;
+    })
   },
 
   initiateDelete: function() {
@@ -299,6 +331,22 @@ const StateManager = {
     return 'done';
   },
 };
+
+function getFullTile(xy) {
+  var returner = null;
+  if (xy) {
+    // Fetch from matrix and build relevant object
+  } else {
+    returner = {
+      x: getX(),
+      y: getY(),
+      origin: getOrigin(),
+      direction: getDirection(),
+      type: getCurrentTile(),
+    }
+  }
+  return returner;
+}
 
 function setPassword(newPassword) {
   password = newPassword;

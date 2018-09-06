@@ -1,10 +1,7 @@
 
 
-FieldTile proper display
-  Display: absolute
-  Data: Relative
-    Create interpretor file
-Placing tile display & toggle
+Placing tile display
+  have css override to show placing mode
 -Allow movement from empty into origin
 ActionControl check if type '0',
   allow intent to origin
