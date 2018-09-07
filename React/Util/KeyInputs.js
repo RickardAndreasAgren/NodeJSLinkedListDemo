@@ -12,7 +12,7 @@ const KeyInputs = {
       console.log(this.keyPressList[keyPressed.key]);
       return this.keyPressList[keyPressed.key];
     } else {
-      throw new Error('')
+      return false;
     }
   },
 

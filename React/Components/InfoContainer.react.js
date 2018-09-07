@@ -9,7 +9,19 @@ class InfoContainer extends React.Component {
     return (
       <div className='infocontainer'>
         <p>
-          {this.props.mode}
+          Shift: Swap from {this.props.mode}
+        </p>
+        <p>
+          Arrows: Movement and placement direction intent
+        </p>
+        <p>
+          Space: In place mode, change tile type
+        </p>
+        <p>
+          Ctrl & Enter: In place mode, attempt to place tile
+        </p>
+        <p>
+          Backspace: Start delete from current point
         </p>
       </div>
     );

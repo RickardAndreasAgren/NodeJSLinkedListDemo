@@ -334,7 +334,7 @@ var FieldTile = function (_React$Component) {
         this.props.tile != 'e' ? console.log(this.props) : null;
         this.props.tile != 'e' ? console.log(this.state) : null;
         return new Promise(function (resolve, reject) {
-          var returner = _TranslatePropsToTile2.default.translateTile(_this4.props.origin, _this4.props.direction, _this4.props.tile);
+          var returner = _TranslatePropsToTile2.default.translateTile(_this4.props.origin, _this4.props.direction, _this4.props.tile, _this4.props.placed);
           resolve(returner);
         }).then(function (setThis) {
           _this.setState(setThis);
@@ -413,7 +413,28 @@ var InfoContainer = function (_React$Component) {
         _react2.default.createElement(
           'p',
           null,
+          'Shift: Swap from ',
           this.props.mode
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Arrows: Movement and placement direction intent'
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Space: In place mode, change tile type'
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Ctrl & Enter: In place mode, attempt to place tile'
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Backspace: Start delete from current point'
         )
       );
     }
@@ -554,11 +575,27 @@ var LinkApp = function (_React$Component) {
             ref: this.setKeyInputRef }),
           _react2.default.createElement(
             'div',
-            { className: 'tile quad ' },
-            _react2.default.createElement('div', { className: 't1 qd qr qu' }),
-            _react2.default.createElement('div', { className: 't2 qd' }),
-            _react2.default.createElement('div', { className: 't3 qu' }),
-            _react2.default.createElement('div', { className: 't4 qr' })
+            { style: { height: '50px' } },
+            _react2.default.createElement(
+              'div',
+              { className: 'tile quad ' },
+              _react2.default.createElement('div', { className: 't1 qd qr' }),
+              _react2.default.createElement('div', { className: 't2 qd ql' }),
+              _react2.default.createElement('div', { className: 't3 qu qr' }),
+              _react2.default.createElement('div', { className: 't4 ql qu' })
+            )
+          ),
+          _react2.default.createElement(
+            'div',
+            { style: { height: '50px' } },
+            _react2.default.createElement(
+              'div',
+              { className: 'tile quad' },
+              _react2.default.createElement('div', { className: 't1 pd pr' }),
+              _react2.default.createElement('div', { className: 't2 pd pl' }),
+              _react2.default.createElement('div', { className: 't3 pu pr' }),
+              _react2.default.createElement('div', { className: 't4 pl pu' })
+            )
           )
         ),
         _react2.default.createElement(_FieldContainer2.default, { gridField: this.state.field.gridField,
@@ -670,7 +707,8 @@ var directions = {
 var deadTile = {
   origin: '0',
   direction: '0',
-  tileType: 'e'
+  tileType: 'e',
+  placed: false
 };
 
 var password = '';
@@ -703,7 +741,8 @@ var StateManager = {
     fieldMatrix[9][18] = {
       origin: 'D',
       direction: 'U',
-      tileType: 'I'
+      tileType: 'I',
+      placed: true
     };
     return getAppState();
   },
@@ -824,6 +863,11 @@ var StateManager = {
       return returner;
     }).then(function (done) {
       console.log('Set these');
+      console.log(done);
+      if (done) {
+        setCurrentTile = done.tile.tile;
+        setDirection = done.tile.direction;
+      }
       return done;
     }).catch(function (err) {
       console.log('Failed to move to empty tile');
@@ -1626,7 +1670,7 @@ var KeyInputs = {
       console.log(this.keyPressList[keyPressed.key]);
       return this.keyPressList[keyPressed.key];
     } else {
-      throw new Error('');
+      return false;
     }
   },
 
@@ -1653,114 +1697,150 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 /* .
-  horizontal h
-  vertical v
-  upleft ul
-  upright ur
-  downleft dl
-  downright dr
-  tcrossup tu
-  tcrossdown td
-  tcrossleft tl
-  tcrossright tr
-  crossing x
+horizontal h
+vertical v
+upleft ul
+upright ur
+downleft dl
+downright dr
+tcrossup tu
+tcrossdown td
+tcrossleft tl
+tcrossright tr
+crossing x
 */
 
 var TileConstants = {
-  horizontal: {
-    display: 'h',
-    t1: 'qd',
-    t2: 'qd',
-    t3: 'qu',
-    t4: 'qu'
+  horizontal: function horizontal(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'h',
+      t1: prefix + 'd',
+      t2: prefix + 'd',
+      t3: prefix + 'u',
+      t4: prefix + 'u'
+    };
   },
 
-  vertical: {
-    display: 'v',
-    t1: 'qr',
-    t2: 'ql',
-    t3: 'qr',
-    t4: 'ql'
+  vertical: function vertical(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'v',
+      t1: prefix + 'r',
+      t2: prefix + 'l',
+      t3: prefix + 'r',
+      t4: prefix + 'l'
+    };
   },
 
-  upleft: {
-    display: 'ul',
-    t1: 'qr qd',
-    t2: 'ql',
-    t3: 'qu',
-    t4: ''
+  upleft: function upleft(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'ul',
+      t1: prefix + 'r ' + prefix + 'd',
+      t2: prefix + 'l',
+      t3: prefix + 'u',
+      t4: ''
+    };
   },
 
-  upright: {
-    display: 'ur',
-    t1: 'qr',
-    t2: 'ql qd',
-    t3: '',
-    t4: 'qu'
+  upright: function upright(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'ur',
+      t1: prefix + 'r',
+      t2: prefix + 'l ' + prefix + 'd',
+      t3: '',
+      t4: prefix + 'u'
+    };
   },
 
-  downleft: {
-    display: 'dl',
-    t1: 'qd',
-    t2: '',
-    t3: 'qr qu',
-    t4: 'ql'
+  downleft: function downleft(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'dl',
+      t1: prefix + 'd',
+      t2: '',
+      t3: prefix + 'r ' + prefix + 'u',
+      t4: prefix + 'l'
+    };
   },
 
-  downright: {
-    display: 'dr',
-    t1: '',
-    t2: 'qd',
-    t3: 'qr',
-    t4: 'ql qu'
+  downright: function downright(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'dr',
+      t1: '',
+      t2: 'd',
+      t3: 'r',
+      t4: prefix + 'l ' + prefix + 'u'
+    };
   },
 
-  tcrossup: {
-    display: 'tu',
-    t1: 'qd qr',
-    t2: 'qd ql',
-    t3: 'qu',
-    t4: 'qu'
+  tcrossup: function tcrossup(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'tu',
+      t1: prefix + 'd ' + prefix + 'r',
+      t2: prefix + 'd ' + prefix + 'l',
+      t3: 'u',
+      t4: 'u'
+    };
   },
 
-  tcrossdown: {
-    display: 'td',
-    t1: 'qd',
-    t2: 'qd',
-    t3: 'qu qr',
-    t4: 'qu ql'
+  tcrossdown: function tcrossdown(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'td',
+      t1: 'd',
+      t2: 'd',
+      t3: prefix + 'u ' + prefix + 'r',
+      t4: prefix + 'u ' + prefix + 'l'
+    };
   },
 
-  tcrossleft: {
-    display: 'tl',
-    t1: 'qd qr',
-    t2: 'ql',
-    t3: 'qu qr',
-    t4: 'ql'
+  tcrossleft: function tcrossleft(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'tl',
+      t1: prefix + 'd ' + prefix + 'r',
+      t2: 'l',
+      t3: prefix + 'u ' + prefix + 'r',
+      t4: 'l'
+    };
   },
 
-  tcrossright: {
-    display: 'tr',
-    t1: 'ql',
-    t2: 'qr qd',
-    t3: 'ql',
-    t4: 'qr qu'
+  tcrossright: function tcrossright(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'tr',
+      t1: 'l',
+      t2: prefix + 'r ' + prefix + 'd',
+      t3: 'l',
+      t4: prefix + 'r ' + prefix + 'u'
+    };
   },
 
-  crossing: {
-    display: 'x',
-    t1: 'qd qr',
-    t2: 'qd ql',
-    t3: 'qu qr',
-    t4: 'qu ql'
+  crossing: function crossing(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'x',
+      t1: prefix + 'd ' + prefix + 'r',
+      t2: prefix + 'd ' + prefix + 'l',
+      t3: prefix + 'u ' + prefix + 'r',
+      t4: prefix + 'u ' + prefix + 'l'
+    };
   },
 
-  empty: {
-    display: 'e',
-    t1: '',
-    t2: '',
-    t3: '',
-    t4: ''
+  empty: function empty(placed) {
+    var prefix = placed ? 'q' : 'p';
+    return {
+      display: 'e',
+      t1: '',
+      t2: '',
+      t3: '',
+      t4: ''
+    };
   }
 };
 
@@ -1846,7 +1926,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var TranslatePropsToTile = {
 
   // Take tile info and return state
-  translateTile: function translateTile(origin, direction, type) {
+  translateTile: function translateTile(origin, direction, type, placed) {
     var _this = this;
 
     return new Promise(function (resolve, reject) {

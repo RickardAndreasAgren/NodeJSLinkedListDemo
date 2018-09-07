@@ -61,7 +61,8 @@ class FieldTile extends React.Component {
         var returner = TranslatePropsToTile.translateTile(
           this.props.origin,
           this.props.direction,
-          this.props.tile
+          this.props.tile,
+          this.props.placed,
         );
         resolve(returner);
       })

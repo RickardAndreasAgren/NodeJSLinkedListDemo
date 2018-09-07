@@ -35,7 +35,8 @@ const deadTile = {
   origin: '0',
   direction: '0',
   tileType: 'e',
-}
+  placed: false,
+};
 
 var password = '';
 var error = '';
@@ -71,7 +72,8 @@ const StateManager = {
       origin: 'D',
       direction: 'U',
       tileType: 'I',
-    }
+      placed: true,
+    };
     return getAppState();
   },
 
@@ -206,6 +208,11 @@ const StateManager = {
     })
     .then(function(done) {
       console.log('Set these');
+      console.log(done);
+      if (done) {
+        setCurrentTile = done.tile.tile;
+        setDirection = done.tile.direction;
+      }
       return done;
     })
     .catch(function(err) {

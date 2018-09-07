@@ -84,11 +84,21 @@ class LinkApp extends React.Component {
               return true;
             }}
             ref={this.setKeyInputRef}/>
-          <div className='tile quad '>
-            <div className='t1 qd qr qu'></div>
-            <div className='t2 qd'></div>
-            <div className='t3 qu'></div>
-            <div className='t4 qr'></div>
+          <div style={{height: '50px'}}>
+            <div className='tile quad '>
+              <div className='t1 qd qr'></div>
+              <div className='t2 qd ql'></div>
+              <div className='t3 qu qr'></div>
+              <div className='t4 ql qu'></div>
+            </div>
+          </div>
+          <div style={{height: '50px'}}>
+            <div className='tile quad'>
+              <div className='t1 pd pr'></div>
+              <div className='t2 pd pl'></div>
+              <div className='t3 pu pr'></div>
+              <div className='t4 pl pu'></div>
+            </div>
           </div>
         </div>
         <FieldContainer gridField={this.state.field.gridField}

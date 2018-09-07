@@ -1,5 +1,9 @@
 
 
+set selected tile with placement
+  and overriding CSS to display
+  ze tile
+
 change mode to place
   : use origin, default direction to opposite
   : find placable tile option

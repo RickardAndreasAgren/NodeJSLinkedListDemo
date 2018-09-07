@@ -12,7 +12,7 @@ import TileMath from './TileMath';
 const TranslatePropsToTile = {
 
   // Take tile info and return state
-  translateTile: function(origin, direction, type) {
+  translateTile: function(origin, direction, type, placed) {
     return new Promise((resolve,reject) => {
       resolve(this.defineByType(origin, direction, type));
     })
