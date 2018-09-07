@@ -84,6 +84,7 @@ const StateManager = {
   },
 
   attemptAction: function(e, callback) {
+    var _this = this;
     if (!getLock()) {
       if (e) {
         setLock(true);
@@ -110,11 +111,12 @@ const StateManager = {
               getField(),
             );
           } else {
+            console.log('Checking non-arrow actions');
             // . e b s
-            returner = actionIntention == 'e' ? this.initiatePlace() :
-            actionIntention == 's' ? this.changePlacer() :
-            actionIntention == 'b' ? this.initiateDelete() :
-            actionIntention == 't' ? this.changeMode() : false;
+            returner = actionIntention == 'e' ? _this.initiatePlace() :
+            actionIntention == 's' ? _this.changePlacer() :
+            actionIntention == 'b' ? _this.initiateDelete() :
+            actionIntention == 't' ? _this.changeMode() : false;
           }
           console.log(returner);
           return returner;
@@ -170,6 +172,7 @@ const StateManager = {
 
   changeSelectEmpty: function(intent) {
     console.log('Moving to empty tile');
+    var _this = this;
     return new Promise((resolve,reject) => {
       resolve(setMode('place'));
     })
@@ -193,11 +196,17 @@ const StateManager = {
       var returner = null;
       console.log(beO);
       if (beO == 0) {
-        returner = true;
+        returner = _this.changePlacer(false);
+        console.log('Changing placer to: ');
+        console.log(returner);
       } else {
         returner = false;
       }
       return returner;
+    })
+    .then(function(done) {
+      console.log('Set these');
+      return done;
     })
     .catch(function(err) {
       console.log('Failed to move to empty tile');
@@ -247,8 +256,9 @@ const StateManager = {
 
   changePlacer: function(intent) {
     console.log('Change placement tile');
+    var hasIntent = intent ? intent : false;
     return ActionControl['place'](
-      (hasIntent = intent ? intent : false),
+      hasIntent,
       getFullTile(),
       getField(),
     );
@@ -283,21 +293,35 @@ const StateManager = {
   changeMode: function() {
     var _this = this;
     return new Promise((resolve,reject) => {
-      return setMode();
+      console.log('Change mode');
+      resolve(setMode(false));
     })
     .then(function(modeWasSet) {
       var returner = null;
+      console.log('Mode set');
+      console.log(modeWasSet);
       if (modeWasSet == 0) {
         if (getMode() == 'place') {
-          returner = _this.changePlacer(TileMath.getDirection(
-            TileMath.plus(
-              TileMath.getNumber(getOrigin(),2)
-            )
-          ))
+          console.log('Changing mode to place');
+          if (getCurrentTile() != 'e') {
+            setMode('move');
+            returner = 1;
+          } else {
+            returner = _this.changePlacer(TileMath.getDirection(
+              TileMath.plus(
+                TileMath.getNumber(getOrigin(),2)
+              )
+            ))
+          }
         } else if (getMode() == 'move') {
-          // Set current info by fetching from matrix
+          console.log('Changing mode to move');
+          var actualTile = getField(null, getX(), getY());
+          setDirection(actualTile.direction);
+          setCurrentTile(actualTile.tileType);
+          returner = 1;
         }
       } else {
+        console.log('Didnt change mode. So why is this called?');
         returner = false;
       }
       return returner;
@@ -306,9 +330,11 @@ const StateManager = {
       return new Promise((resolve,reject) => {
         if (!proceed) {
           reject('Setting placer failed');
+        } else if (proceed == 1) {
+          resolve({change: 'done'});
         } else {
           // Set all new tile info
-          resolve(true)
+          resolve({change: 'done'});
         }
       })
     })

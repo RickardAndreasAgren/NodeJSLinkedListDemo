@@ -46,6 +46,7 @@ const ActionControl = {
 
   lookupExit: function(intent, currentTile, lookupType) {
     var dbt = lookupType + currentTile.type;
+    console.log('Looking up exit. ', dbt);
     var returner = intent == currentTile.direction ? true :
       (DirectionByTile[dbt])(currentTile, intent) ? true : false;
     console.log('Exit is ');
@@ -79,26 +80,29 @@ const ActionControl = {
     return returner;
   },
 
-
   place: function(intention, currentTile, fieldMatrix) {
-    // Empty intent = try to change tile type
+    // Empty intent = try to change tile type, return P+direction
+    // todo DEBUG
+    console.log('Placing called with intent: ');
+    console.log(intention);
     var _this = this;
-    var checkTile = currentTile.type == 'e' ? currentTile :
+    var checkTile = currentTile.type != 'e' ? currentTile :
       {
         x: currentTile.x,
         y: currentTile.y,
         origin: currentTile.origin,
-        direction: intention,
-        tileType: 'I',
+        direction: (intention ? intention : currentTile.direction),
+        type: 'I',
       };
     var loopLimit = currentTile.type;
     var directionCounter = 0;
     var changedTile = false;
+    var findingNewTilePossibility = true;
 
 
     const promiseWhile = (data, condition, action) => {
       var whilst = (data) => {
-        console.log(data);
+        console.log('whilst ', data);
         return condition(data) ?
         action(data).then(whilst) :
         Promise.resolve(data);
@@ -107,39 +111,73 @@ const ActionControl = {
     };
 
     return new Promise((resolve,reject) => {
-
+      console.log('ACPp: ', intention);
       if (!intention) {
-        var findingNewTilePossibility = true;
 
-        const acceptableTile = (dataBlob) => {
-          return new Promise((resolve, reject) => {
-            // Do all the things
-            // count directions
-            if (_this.lookupPlacingExits(null, null)) {
-
+        const acceptableTile = (tileTry) => {
+          return new Promise((iresolve, ireject) => {
+            console.log('ACP: Look up exit');
+            console.log('')
+            if (_this.lookupExit(tileTry.direction, tileTry, 'place')) {
+              console.log('ACP: Found tile option');
+              if (_this.lookupPlacingConnections(tileTry.direction,
+                tileTry, fieldMatrix)) {
+                console.log('ACP: Found tile direction');
+                findingNewTilePossibility = false;
+                iresolve(tileTry);
+              } else if (tileTry.type == loopLimit && changedTile == false) {
+                console.log('ACP: rotate1');
+                tileTry.type = _this.cycleType(tileTry.type);
+                changedTile = true;
+                iresolve(tileTry);
+              } else if (tileTry.type == loopLimit) {
+                console.log('ACP: rotate2');
+                findingNewTilePossibility = false;
+                iresolve(false);
+              } else {
+                console.log('ACP: rotate3');
+                tileTry.type = _this.cycleType(tileTry.type);
+                iresolve(tileTry);
+              }
+            } else {
+              tileTry.direction = TileMath.getDirection(
+                TileMath.plus(TileMath.getNumber(tileTry.direction),1)
+              );
+              console.log('ACP: rotate4');
+              iresolve(tileTry);
             }
-            // If tile ok, set findingNewTilePossibility to false
-            // if tile type is loop limit and changedTile is false and all directions tested,
-            //  change tile type and set changedTile to true
-            // else if tile type is loop limit and changedTile is false, try next option
-            // else if tile type is loop limit, set findingNewTilePossibility to false
-            //    and reject in then
-            // else if all tile directions attempted, change tile type
-            // else if tile bad, try next tile
-            //
-            // "all directions tested, direction counter == 3", dont forget to reset
-            resolve(findingNewTilePossibility);
           });
         }
 
-        promiseWhile(checkTile, tc => tc == true, acceptableTile)
-        .then(() => {
-          // Return working tile
+        var findPlacingOption = promiseWhile(checkTile,
+          () => findingNewTilePossibility == true,
+          acceptableTile)
+        .then((result) => {
+          console.log('ACPresult: ');
+          console.log(result);
+          var returner;
+          if (!result) {
+            throw new Error('Cant place a tile here');
+          } else {
+            returner = result;
+          }
+          return returner;
         })
+        .catch((err) => {
+          console.log('Promise loop errored');
+          console.log(err);
+          return false;
+        })
+
+        resolve(findPlacingOption);
+
       } else {
+        console.log('No intent in placing');
         if (_this.lookupExit(intention, checkTile, 'place')) {
+          console.log('Placing intent OK');
           if (_this.lookupPlacingConnections(intent, checkTile, fieldMatrix)) {
-            // Return 'P'+directionLetter
+            console.log('Placing connections OK');
+            resolve('P' + checkTile.direction);
           }
         } else {
           reject('Can not resolve placing intent');
@@ -150,6 +188,44 @@ const ActionControl = {
       console.log('Placing not allowed');
       return false;
     })
+  },
+
+  lookupPlacingConnections: function(intent, tile, matrix) {
+    // Establish lookup directions, remove origin
+    // check adjacent tiles, tile.origin is
+    var _this = this;
+    return new Promise((resolve,reject) => {
+      for (var i = 1; i < 5; i++) {
+        var dbt = 'check' + tile.type;
+        console.log('LPC: ', dbt);
+        if (tile.origin != TileMath.getDirection(i) &&
+        DirectionByTile[dbt](tile, TileMath.getDirection(i))) {
+          if (!_this.lookupNextConnection(i,tile,matrix)) {
+            resolve(false);
+          }
+        }
+      }
+      resolve(true);
+    })
+  },
+
+  lookupNextConnection: function(num, currentTile, matrix) {
+    var directions = ReactConstants.directions;
+    var xC = currentTile.x + directions[TileMath.getDirection(num)].x;
+    var yC = currentTile.y + directions[TileMath.getDirection(num)].y;
+    var tileInfo = matrix[xC][yC];
+    var testIntent = TileMath.getDirection(TileMath.minus(num,2));
+    var tileToTest = {
+      x: xC,
+      y: yC,
+      origin: tileInfo.origin,
+      type: tileInfo.tileType,
+      direction: tileInfo.direction,
+    };
+    console.log('Check exit on ');
+    console.log(tileToTest);
+    return (tileInfo.tileType == 'e' ? true :
+      this.lookupExit(testIntent, tileToTest, 'check'));
   },
 
   cycleType: function(type) {

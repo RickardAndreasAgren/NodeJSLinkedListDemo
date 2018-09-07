@@ -1,16 +1,16 @@
 
 
-Placing tile display
-  have css override to show placing mode
--Allow movement from empty into origin
-ActionControl check if type '0',
-  allow intent to origin
+change mode to place
+  : use origin, default direction to opposite
+  : find placable tile option
+  : if none, change back to move
 
-Layout
--Calc active width
-Board controller
-State management
-Grid management
-Key
-Piece types
-TranslateDirectionToImage
+in place mode - arrow
+  : use origin and intent to attempt
+  : tile in intent direction
+  : do nothing if fail
+
+change tile type placing
+  : use origin, default direction to opposite
+  : find placable tile option
+  : if none, change an additional type
