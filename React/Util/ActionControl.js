@@ -32,6 +32,7 @@ const ActionControl = {
         if (!destinationInformation) {
           reject(false);
         } else {
+          console.log(currentTile);
           resolve(destinationInformation);
         }
       } else {
@@ -66,10 +67,12 @@ const ActionControl = {
       if (tile.tileType == 'e') {
         returner = intent;
       } else {
-        var entry = TileMath.getDirection(TileMath.plus(intent, 2));
+        var entry = TileMath.getDirection(
+          TileMath.plus(
+            TileMath.getNumber(intent), 2));
         var dbt = 'check' + currentTile.type;
         if (DirectionByTile[dbt](tile, entry)) {
-          returner = tile;
+          returner = 'E' + intent;
         } else {
           returner = false;
         }

@@ -4,9 +4,10 @@ import TileMath from './TileMath';
 const DirectionByTile = {
 
   checkI: function(tile, intent) {
-    var dt = TileMath.getNumber(intent);
+    var dt = TileMath.getNumber(tile.direction);
+    console.log('CI');
     var returner = (tile.direction == intent) ? true :
-      TileMath.plus(dt, 2) == intent ? true :
+      TileMath.getDirection(TileMath.plus(dt, 2)) == intent ? true :
       false;
     return returner;
   },

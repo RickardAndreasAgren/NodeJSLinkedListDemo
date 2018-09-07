@@ -32,7 +32,8 @@ class FieldTile extends React.Component {
         var returner = TranslatePropsToTile.translateTile(
           this.props.origin,
           this.props.direction,
-          this.props.tile
+          this.props.tile,
+          this.props.placed,
         );
         resolve(returner);
       })
@@ -79,6 +80,8 @@ class FieldTile extends React.Component {
 
   render() {
     this.props.tile != 'e' ? console.log('Tile rendered') : null;
+    this.props.tile != 'e' ? console.log('This tile is: ') : null;;
+    this.props.tile != 'e' ? console.log(this.props) : null;
     var selected = this.props.selected ? this.props.selected : false;
 
     var tileClass = selected ? 'tile quad selected' : 'tile quad';

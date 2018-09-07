@@ -166,6 +166,7 @@ var FieldLayout = function (_React$Component) {
   /* Props
     gridField
     position {xpos, ypos}
+    placed
     width
     forceUpdate
     updateDoneFunc
@@ -211,7 +212,7 @@ var FieldLayout = function (_React$Component) {
           var active = currentCell === activeCell;
           var cell = _react2.default.createElement(_FieldTile2.default, { key: x + '-' + y, x: x, y: y,
             origin: value.origin, direction: value.direction,
-            tile: value.tileType, selected: active });
+            tile: value.tileType, selected: active, placed: value.placed });
           currentCell++;
           return cell;
         }, this);
@@ -307,7 +308,7 @@ var FieldTile = function (_React$Component) {
         var _this = this;
         this.props.tile != 'e' ? console.log('Tile did mount and set') : null;
         new Promise(function (resolve, reject) {
-          var returner = _TranslatePropsToTile2.default.translateTile(_this3.props.origin, _this3.props.direction, _this3.props.tile);
+          var returner = _TranslatePropsToTile2.default.translateTile(_this3.props.origin, _this3.props.direction, _this3.props.tile, _this3.props.placed);
           resolve(returner);
         }).then(function (setThis) {
           _this.setState(setThis);
@@ -349,6 +350,8 @@ var FieldTile = function (_React$Component) {
     key: 'render',
     value: function render() {
       this.props.tile != 'e' ? console.log('Tile rendered') : null;
+      this.props.tile != 'e' ? console.log('This tile is: ') : null;;
+      this.props.tile != 'e' ? console.log(this.props) : null;
       var selected = this.props.selected ? this.props.selected : false;
 
       var tileClass = selected ? 'tile quad selected' : 'tile quad';
@@ -724,6 +727,7 @@ var ypos = 18;
 var currentTile = 'I'; // I || L || T || X || e
 var direction = 'U'; // U || D || L || R (absolute)
 var origin = 'D'; // U || D || L || R (absolute)
+var placed = true;
 var lock = false;
 var fieldMatrix = [];
 
@@ -796,6 +800,7 @@ var StateManager = {
             L: true,
             R: true
           };
+          console.log('Taking Action: ');
           console.log(action);
           if (action.change && action.change == 'done') {
             returner = true;
@@ -865,8 +870,17 @@ var StateManager = {
       console.log('Set these');
       console.log(done);
       if (done) {
-        setCurrentTile = done.tile.tile;
-        setDirection = done.tile.direction;
+        setCurrentTile(done.type);
+        setDirection(done.direction);
+        setPlaced(false);
+        var placingTile = {
+          direction: getDirection(),
+          tileType: getCurrentTile(),
+          origin: getOrigin(),
+          placed: false
+        };
+        setField(getX(), getY(), placingTile);
+        setForceUpdate(true);
       }
       return done;
     }).catch(function (err) {
@@ -881,6 +895,12 @@ var StateManager = {
     return new Promise(function (resolve, reject) {
       resolve(setMode('move'));
     }).then(function (done) {
+      setField(getX(), getY(), {
+        direction: '0',
+        origin: '0',
+        tileType: 'e',
+        placed: false
+      });
       var change = directions[intent];
       setX(change.x + getX());
       setY(change.y + getY());
@@ -897,14 +917,16 @@ var StateManager = {
     }).then(function (updated) {
       var returner;
       if (updated[0] == 0 && updated[1] == 0 && updated[2] == 0) {
+        setPlaced(true);
         returner = true;
       } else {
-        returner = false;
+        throw new Error({ sd: updated[0], so: updated[1], sc: updated[2] });
       }
       return returner;
     }).catch(function (err) {
       console.log('Failed to move to existing tile');
       console.log(err);
+      return false;
     });
   },
 
@@ -1123,6 +1145,19 @@ function getOrigin() {
   return origin;
 }
 
+function setPlaced(tof) {
+  if (tof) {
+    placed = true;
+  } else {
+    placed = false;
+  }
+  return 0;
+}
+
+function getPlaced() {
+  return placed;
+}
+
 function setLock(newLock) {
   if (!newLock) {
     lock = lock == true ? false : true;
@@ -1137,7 +1172,7 @@ function getLock() {
 }
 
 function setField(x, y, tileUpdate) {
-  fieldUpdate[x][y] = tileUpdate;
+  fieldMatrix[x][y] = tileUpdate;
 }
 
 function getField(tile, x, y) {
@@ -1220,6 +1255,7 @@ var ActionControl = {
         if (!destinationInformation) {
           reject(false);
         } else {
+          console.log(currentTile);
           resolve(destinationInformation);
         }
       } else {
@@ -1251,10 +1287,10 @@ var ActionControl = {
       if (tile.tileType == 'e') {
         returner = intent;
       } else {
-        var entry = _TileMath2.default.getDirection(_TileMath2.default.plus(intent, 2));
+        var entry = _TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(intent), 2));
         var dbt = 'check' + currentTile.type;
         if (_DirectionByTile2.default[dbt](tile, entry)) {
-          returner = tile;
+          returner = 'E' + intent;
         } else {
           returner = false;
         }
@@ -1607,8 +1643,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var DirectionByTile = {
 
   checkI: function checkI(tile, intent) {
-    var dt = _TileMath2.default.getNumber(intent);
-    var returner = tile.direction == intent ? true : _TileMath2.default.plus(dt, 2) == intent ? true : false;
+    var dt = _TileMath2.default.getNumber(tile.direction);
+    console.log('CI');
+    var returner = tile.direction == intent ? true : _TileMath2.default.getDirection(_TileMath2.default.plus(dt, 2)) == intent ? true : false;
     return returner;
   },
 
@@ -1934,7 +1971,7 @@ var TranslatePropsToTile = {
     }).then(function (tileString) {
       tileString != 'empty' ? console.log('Tilestring established') : null;
       if (tileString) {
-        return _TileConstants2.default[tileString];
+        return _TileConstants2.default[tileString](placed);
       } else {
         throw new Error('Failed to interpret tile');
       }

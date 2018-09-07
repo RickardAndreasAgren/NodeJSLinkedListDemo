@@ -17,6 +17,7 @@ class FieldLayout extends React.Component {
   /* Props
     gridField
     position {xpos, ypos}
+    placed
     width
     forceUpdate
     updateDoneFunc
@@ -57,7 +58,7 @@ class FieldLayout extends React.Component {
         var active = currentCell === activeCell;
         var cell = <FieldTile key={x + '-' + y} x={x} y={y}
           origin={value.origin} direction={value.direction}
-          tile={value.tileType} selected={active}/>
+          tile={value.tileType} selected={active} placed={value.placed}/>
         currentCell++;
         return cell;
       }, this);

@@ -19,7 +19,7 @@ const TranslatePropsToTile = {
     .then(function(tileString) {
       tileString != 'empty' ? console.log('Tilestring established') : null;
       if (tileString) {
-        return TileConstants[tileString];
+        return TileConstants[tileString](placed);
       } else {
         throw new Error('Failed to interpret tile');
       }

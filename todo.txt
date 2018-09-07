@@ -1,8 +1,7 @@
 
 
-set selected tile with placement
-  and overriding CSS to display
-  ze tile
+MAKE SURE YOU MOVE TO EXISTING TILE
+  WITH THE RIGHT FUNCTION
 
 change mode to place
   : use origin, default direction to opposite

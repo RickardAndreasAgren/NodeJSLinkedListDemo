@@ -51,6 +51,7 @@ var ypos = 18;
 var currentTile = 'I'; // I || L || T || X || e
 var direction = 'U'; // U || D || L || R (absolute)
 var origin = 'D'; // U || D || L || R (absolute)
+var placed = true;
 var lock = false;
 var fieldMatrix = [];
 
@@ -132,6 +133,7 @@ const StateManager = {
             L: true,
             R: true,
           };
+          console.log('Taking Action: ');
           console.log(action);
           if (action.change && action.change == 'done') {
             returner = true;
@@ -210,8 +212,17 @@ const StateManager = {
       console.log('Set these');
       console.log(done);
       if (done) {
-        setCurrentTile = done.tile.tile;
-        setDirection = done.tile.direction;
+        setCurrentTile(done.type);
+        setDirection(done.direction);
+        setPlaced(false);
+        var placingTile = {
+          direction: getDirection(),
+          tileType: getCurrentTile(),
+          origin: getOrigin(),
+          placed: false,
+        };
+        setField(getX(),getY(),placingTile);
+        setForceUpdate(true);
       }
       return done;
     })
@@ -228,6 +239,12 @@ const StateManager = {
       resolve(setMode('move'));
     })
     .then(function(done) {
+      setField(getX(),getY(),{
+        direction: '0',
+        origin: '0',
+        tileType: 'e',
+        placed: false,
+      });
       var change = directions[intent];
       setX(change.x + getX());
       setY(change.y + getY());
@@ -247,15 +264,17 @@ const StateManager = {
     .then(function(updated) {
       var returner;
       if (updated[0] == 0 && updated[1] == 0 && updated[2] == 0) {
+        setPlaced(true);
         returner = true;
       } else {
-        returner = false;
+        throw new Error({sd: updated[0], so: updated[1], sc: updated[2]});
       }
       return returner;
     })
     .catch(function(err) {
       console.log('Failed to move to existing tile');
       console.log(err);
+      return false;
     })
   },
 
@@ -487,6 +506,19 @@ function getOrigin() {
   return origin;
 }
 
+function setPlaced(tof) {
+  if (tof) {
+    placed = true;
+  } else {
+    placed = false;
+  }
+  return 0;
+}
+
+function getPlaced() {
+  return placed;
+}
+
 function setLock(newLock) {
   if (!newLock) {
     lock = lock == true ? false : true;
@@ -501,7 +533,7 @@ function getLock() {
 }
 
 function setField(x,y,tileUpdate) {
-  fieldUpdate[x][y] = tileUpdate;
+  fieldMatrix[x][y] = tileUpdate;
 }
 
 function getField(tile, x, y) {
