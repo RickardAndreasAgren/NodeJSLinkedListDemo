@@ -41,7 +41,7 @@ class LinkedObject {
   }
 
   pop() {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
       var resolved = null;
       if (this.prevObj == 'start') {
         resolve(this.popStart());
@@ -49,18 +49,18 @@ class LinkedObject {
         resolve(this.popMe());
       }
     })
-    .then(function (newObjectTarget) {
+    .then(function(newObjectTarget) {
       if (!newObjectTarget.getVal()) {
         throw new Error('Value missing');
       } else {
         return newObjectTarget;
       }
     })
-    .catch(function (err) {
+    .catch(function(err) {
       console.log('Something got Trumped.');
       throw new Error('Link error');
     })
-    .finally(function (newObjectTarget) {
+    .finally(function(newObjectTarget) {
       newObjectTarget;
     });
   }

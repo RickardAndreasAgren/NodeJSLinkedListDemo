@@ -5,15 +5,24 @@ const express = require('express');
 
 const app = express();
 
+const bodyparser = require('body-parser');
+
 const cts = require('./constants')();
+
+const LinkedList = require('./LinkedList/LinkedList');
 
 var mainRouter = express.Router();
 
-require('./Routing/mainrouter')(__dirname, mainRouter, cts.DEBUG, cts.PASSWORD);
+var serverState = new LinkedList();
+
+require('./Routing/mainrouter')(__dirname, mainRouter, cts.DEBUG, cts.PASSWORD,
+  );
+
+app.use(bodyparser);
 
 app.use(mainRouter);
 
-app.use(function (err, req, res, next) {
+app.use(function(err, req, res, next) {
     if (err) {
       console.log('500 middleware triggered. There was a server error.');
       res.json({ msg: err.message });
