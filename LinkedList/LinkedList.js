@@ -1,12 +1,12 @@
 
-import LinkedI from './LinkedI';
-import LinkedL from './LinkedL';
-import LinkedT from './LinkedT';
-import LinkedX from './LinkedX';
+const LinkedI = require('./LinkedI');
+const LinkedL = require('./LinkedL');
+const LinkedT = require('./LinkedT');
+const LinkedX = require('./LinkedX');
 
 class LinkedList {
   constructor() {
-    this.start = new Linked(null, null);
+    this.start = new LinkedI('start', 0, 'U');
     this.activeLink = this.start;
 
     this.changeStart = this.changeStart.bind(this);
@@ -20,11 +20,11 @@ class LinkedList {
 
   }
 
-  addLink() {
+  addLink(direction, type, entrance) {
 
   }
 
-  moveLink() {
+  traverseLink(direction) {
 
   }
 

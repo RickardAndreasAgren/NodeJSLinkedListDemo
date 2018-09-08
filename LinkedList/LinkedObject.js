@@ -1,13 +1,14 @@
 
 class LinkedObject {
 
-  constructor(prevObj, val) {
+  constructor(prevObj, val, direction) {
     if (prevObj) {
       this.prevObj = prevObj;
     } else {
       this.prevObj = 'start';
     }
 
+    this.direction = direction;
     this.val = val;
     this.nextObj = null;
   }

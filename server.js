@@ -9,16 +9,25 @@ const bodyparser = require('body-parser');
 
 const cts = require('./constants')();
 
-const LinkedList = require('./LinkedList/LinkedList');
+const LinkedInterface = require('./LinkedList/LinkedInterface');
 
 var mainRouter = express.Router();
 
-var serverState = new LinkedList();
-
-require('./Routing/mainrouter')(__dirname, mainRouter, cts.DEBUG, cts.PASSWORD,
-  );
+var serverState = LinkedInterface;
+serverState.init();
 
 app.use(bodyparser);
+
+app.use(function(req,res,next) {
+  if (req.body.password == cts.PASSWORD) {
+    next();
+  } else {
+    res.stats(200).json({password: 'Invalid'});
+  }
+});
+
+require('./Routing/mainrouter')(__dirname, mainRouter, cts.DEBUG,
+  serverState);
 
 app.use(mainRouter);
 

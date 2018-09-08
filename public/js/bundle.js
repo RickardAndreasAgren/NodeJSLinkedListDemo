@@ -1591,37 +1591,45 @@ var ClientAPIHelper = {
       request.open(method, target, true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       resolve({
-        xhr: request, method: method,
-        target: target, data: data,
-        fileData: false
+        xhr: request,
+        data: data
       });
     }).then(function (argblob) {
-      return helper.prepareRequestPromise(argblob);
+      return helper.prepareRequestPromise(argblob.xhr, argblob.data);
     }).then(function (argblob) {
       return helper.promisedSend(argblob);
     });
   },
 
-  prepareRequestPromise: function prepareRequestPromise(argblob) {
+  prepareRequestPromise: function prepareRequestPromise(request, data) {
     var helper = this;
     return new Promise(function (resolve, reject) {
-
-      argblob.xhr.setRequestHeader('Accept', 'text/html');
-      if (argblob.fileData) {
-        new Promise(function (resolveInner, rejectInner) {
-          //Check sync on argblob.data
-          resolveInner(objectToFormData(argblob.data));
-        }).then(function (sendData) {
-          console.log('SendData', sendData);
-          resolve({ xhr: argblob.xhr, data: sendData });
-        });
-      } else {
-        helper.makeQueryPromise(argblob.data).then(function (sendData) {
-          console.log('SendData', sendData);
-          resolve({ xhr: argblob.xhr, data: sendData });
-        });
-      }
+      request.setRequestHeader('Accept', 'text/html');
+      helper.makeQueryPromise(data);
+    }).then(function (sendData) {
+      console.log('SendData', sendData);
+      resolve({ xhr: request, data: sendData });
     });
+  },
+
+  init: function init() {
+    return this.dataRequestPromise('POST', '/init', 0);
+  },
+
+  move: function move(data) {
+    return this.dataRequestPromise('GET', '/move', data);
+  },
+
+  create: function create(data) {
+    return this.dataRequestPromise('POST', '/create', data);
+  },
+
+  delete: function _delete(data) {
+    return this.dataRequestPromise('DELETE', '/delete', 0);
+  },
+
+  continue: function _continue(data) {
+    return this.dataRequestPromise('GET', 'continue', data);
   }
 };
 
