@@ -1,6 +1,14 @@
 
 import ObjectToFormdata from 'object-to-formdata';
 
+/* Endpoints:
+  init
+  move direction
+  create direction, type, entrance
+  delete
+  continue
+*/
+
 var ClientAPIHelper = {
 
   buildParams: function(prefix, obj, add) {

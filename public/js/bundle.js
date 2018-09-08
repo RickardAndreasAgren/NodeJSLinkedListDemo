@@ -1485,6 +1485,14 @@ var _objectToFormdata2 = _interopRequireDefault(_objectToFormdata);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* Endpoints:
+  init
+  move direction
+  create direction, type, entrance
+  delete
+  continue
+*/
+
 var ClientAPIHelper = {
 
   buildParams: function buildParams(prefix, obj, add) {

@@ -1,7 +1,7 @@
 
 class LinkedObject {
 
-  constructor(prevObj, val, direction) {
+  constructor(prevObj, val, direction, entrance) {
     if (prevObj) {
       this.prevObj = prevObj;
     } else {
@@ -9,8 +9,19 @@ class LinkedObject {
     }
 
     this.direction = direction;
+    this.entrance = entrance;
     this.val = val;
     this.nextObj = null;
+
+    this.setNext = this.setNext.bind(this);
+    this.setPrev = this.setPrev.bind(this);
+    this.setValue = this.setValue.bind(this);
+    this.getNext = this.getNext.bind(this);
+    this.getPrev = this.getPrev.bind(this);
+    this.getVal = this.getVal.bind(this);
+    this.pop = this.pop.bind(this);
+    this.popMe = this.popMe.bind(this);
+    this.popStart = this.popStart.bind(this);
   }
 
   setNext(next) {
@@ -19,14 +30,17 @@ class LinkedObject {
     } else {
       this.nextObj = null;
     }
+    return 0;
   }
 
   setprev(prev) {
     this.prevObj = prev;
+    return 0;
   }
 
   setValue(val) {
     this.val = val;
+    return 0;
   }
 
   getNext() {

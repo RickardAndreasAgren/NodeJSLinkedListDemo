@@ -9,7 +9,7 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
 
   mainRouter.post('/init', function(req,res) {
     return new Promise((resolve,reject) => {
-
+      return linkedbackend.init();
     })
     .then(function(done) {
       if (done) {
@@ -26,7 +26,7 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
 
   mainRouter.get('/move', function(req,res) {
     return new Promise((resolve,reject) => {
-
+      return linkedbackend.move(req.body.direction);
     })
     .then(function(done) {
       if (done) {
@@ -43,7 +43,8 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
 
   mainRouter.post('/create', function(req,res) {
     return new Promise((resolve,reject) => {
-
+      var args = req.body;
+      return linkedbackend.create(args.direction, args.type, args.entrance);
     })
     .then(function(done) {
       if (done) {
@@ -60,7 +61,7 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
 
   mainRouter.delete('/delete', function(req,res) {
     return new Promise((resolve,reject) => {
-
+      return linkedbackend.delete();
     })
     .then(function(done) {
       if (done) {
@@ -77,7 +78,7 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
 
   mainRouter.get('/continue', function(req,res) {
     return new Promise((resolve,reject) => {
-
+      return linkedbackend.continue();
     })
     .then(function(done) {
       if (done) {
