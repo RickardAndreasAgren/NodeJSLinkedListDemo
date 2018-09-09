@@ -34,15 +34,15 @@ class LinkedList {
   }
 
   traverseLink(direction) {
-
+    this.activeLink = this.activeLink.move(direction);
   }
 
   removeLink() {
 
   }
 
-  set NextCall(func) {
-
+  nextCall(func) {
+    this.nextCall = func;
   }
 
   executeNextCall() {
