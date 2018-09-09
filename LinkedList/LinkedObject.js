@@ -13,45 +13,35 @@ class LinkedObject {
     this.val = val;
     this.nextObj = null;
 
-    this.setNext = this.setNext.bind(this);
-    this.setPrev = this.setPrev.bind(this);
-    this.setValue = this.setValue.bind(this);
-    this.getNext = this.getNext.bind(this);
-    this.getPrev = this.getPrev.bind(this);
-    this.getVal = this.getVal.bind(this);
     this.pop = this.pop.bind(this);
     this.popMe = this.popMe.bind(this);
     this.popStart = this.popStart.bind(this);
   }
 
-  setNext(next) {
-    if (next) {
-      this.nextObj = next;
-    } else {
-      this.nextObj = null;
-    }
+  set next(next) {
+    this.nextObj = next;
     return 0;
   }
 
-  setprev(prev) {
+  set prev(prev) {
     this.prevObj = prev;
     return 0;
   }
 
-  setValue(val) {
+  set value(val) {
     this.val = val;
     return 0;
   }
 
-  getNext() {
+  get next() {
     return this.nextObj;
   }
 
-  getPrev() {
+  get prev() {
     return this.prevObj;
   }
 
-  getVal() {
+  get value() {
     return this.val;
   }
 

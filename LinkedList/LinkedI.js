@@ -6,6 +6,14 @@ class LinkedI extends LinkedObject {
     super(prevObj, val, direction, entrance);
   }
 
+  set next(next) {
+    if (next.obj) {
+      this.nextObj = next.obj;
+    } else {
+      this.nextObj = next;
+    }
+    return 0;
+  }
 };
 
 module.exports = LinkedI;

@@ -8,7 +8,7 @@ const links = {
   I: LinkedI,
   L: LinkedL,
   T: LinkedT,
-  X: Linkedx,
+  X: LinkedX,
 };
 
 class LinkedList {
@@ -19,7 +19,6 @@ class LinkedList {
     this.changeStart = this.changeStart.bind(this);
     this.addLink = this.addLink.bind(this);
     this.removeLink = this.removeLink.bind(this);
-    this.setNextCall = this.setNextCall.bind(this);
     this.executeNextCall = this.executeNextCall.bind(this);
     this.nextCall = () => {console.log('No next call set')};
   }
@@ -28,8 +27,10 @@ class LinkedList {
     return false;
   }
 
-  addLink(direction, type, entrance) {
-    this.activeLink.setNext(new links[type], 0, direction, entrance);
+  addLink(direction, type, entrance, exit) {
+    var newLink = new links[type](this, 0, direction, entrance)
+    this.activeLink.next({obj: newLink, exit: exit});
+    this.activeLink = this.activeLink.next();
   }
 
   traverseLink(direction) {
@@ -40,11 +41,11 @@ class LinkedList {
 
   }
 
-  setNextCall() {
+  set NextCall(func) {
 
   }
 
-  nextCall () {
+  executeNextCall() {
 
   }
 
