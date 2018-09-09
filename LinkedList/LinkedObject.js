@@ -10,9 +10,11 @@ class LinkedObject {
 
     this.direction = direction;
     this.entrance = entrance;
-    this.val = val;
+    this.val = val ? val : '1';
     this.nextObj = null;
 
+    this.deleteMe = this.deleteMe.bind(this);
+    this.deleteNext = this.this.deleteNext.bind(this);
     this.pop = this.pop.bind(this);
     this.popMe = this.popMe.bind(this);
     this.popStart = this.popStart.bind(this);
@@ -45,6 +47,29 @@ class LinkedObject {
     return this.val;
   }
 
+  deleteMe(mark) {
+    if (mark && !this.markedForDeletion) {
+      this.markedForDeletion = 1;
+    }
+
+    return this.checkDeleteLinks();
+  }
+
+  checkDeleteLinks() {
+    returner = null;
+    if (this.next) {
+      returner = {obj: this.next, move: this.direction};
+    } else {
+      returner = {
+        delete: true,
+        deleteDirection: TileMath.getDirection(
+          TileMath.plus(TileMath.getNumber(this.entrance),2)),
+        postDeleteMove: this.entrance,
+      };
+    }
+    return returner;
+  }
+
   pop() {
     return new Promise(function(resolve, reject) {
       var resolved = null;
@@ -55,7 +80,7 @@ class LinkedObject {
       }
     })
     .then(function(newObjectTarget) {
-      if (!newObjectTarget.getVal()) {
+      if (!newObjectTarget.value) {
         throw new Error('Value missing');
       } else {
         return newObjectTarget;
@@ -66,16 +91,16 @@ class LinkedObject {
       throw new Error('Link error');
     })
     .finally(function(newObjectTarget) {
-      newObjectTarget;
+      return newObjectTarget;
     });
   }
 
   popMe() {
     if (this.nextObj) {
-      this.getPrev().setNext(this.nextObj);
-      this.getNext().setPrev(this.prevObj);
+      this.prev().next(this.nextObj);
+      this.next().prev(this.prevObj);
     } else {
-      this.getPrev().setNext(false);
+      this.prev().next(false);
     }
 
     return this.getVal();

@@ -37,18 +37,33 @@ class LinkedList {
     this.activeLink = this.activeLink.move(direction);
   }
 
-  removeLink() {
+  removeLink(startDelete) {
+    var returner = null;
+    if (!this.activeLink.markedForDeletion) {
+      this.deleting = false;
+    } else if (startDelete) {
+      this.deleting = startDelete;
+    }
 
+    if (this.deleting) {
+
+      var next = this.activeLink.deleteMe();
+
+      if (next.move && next.move in ['U','R','D','L']) {
+        this.activeLink = this.activeLink.move(next.move);
+        returner = {move: next.obj.move, delete: 0};
+      } else if (next.delete) {
+        var killDirection = next.deleteDirection;
+        this.activeLink = this.activeLink.prev;
+        this.activeLink.next = {obj: null};
+
+        returner = {move: next.postDeleteMove, delete: 1};
+      }
+    } else {
+      returner = 1;
+    }
+    return returner;
   }
-
-  nextCall(func) {
-    this.nextCall = func;
-  }
-
-  executeNextCall() {
-
-  }
-
 };
 
 module.exports = LinkedList;

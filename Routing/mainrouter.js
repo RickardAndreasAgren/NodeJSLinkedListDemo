@@ -61,7 +61,7 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
 
   mainRouter.delete('/delete', function(req,res) {
     return new Promise((resolve,reject) => {
-      return linkedbackend.delete();
+      return linkedbackend.delete(true);
     })
     .then(function(done) {
       if (done) {

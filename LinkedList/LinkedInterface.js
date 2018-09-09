@@ -26,7 +26,14 @@ const LinkedInterface = {
   */
 
   move: function(direction) {
-    return this.listState.traverseLink(direction);
+    var returner = null;
+    var moveResult = this.listState.traverseLink(direction)
+    if (moveResult == 0) {
+      returner = {action: 'Success'};
+    } else {
+      returner = {action: 'Failed', err: moveResult}
+    }
+    return returner;
   },
 
   /*
@@ -38,7 +45,14 @@ const LinkedInterface = {
   */
 
   create: function(direction, type, entrance) {
-    return this.listState.addLink(direction);
+    var returner = null;
+    var createResult = this.listState.addLink(direction);
+    if (createResult == 0) {
+      returner = {action: 'Success'};
+    } else {
+      returner = {action: 'Failed', err: createResult}
+    }
+    return returner;
   },
 
   /*
@@ -48,19 +62,32 @@ const LinkedInterface = {
     || {err: err, action: 'Failed'}
   */
 
-  delete: function() {
-    return this.listState.removeLink();
+  delete: function(start) {
+    var returner = null;
+    var deleteResult = this.listState.removeLink(start);
+    if (typeof deleteResult == 'string') {
+      returner = {
+        action: 'Success',
+        move: createResult.move,
+        delete: createResult.delete,
+      };
+    } else if (delete ==1 ) {
+      returner = {action: 'Success', done: true};
+    } else {
+      returner = {action: 'Failed', err: deleteResult};
+    }
+    return returner;
   },
 
   /*
     @param:
 
-    @returns {action: 'Success', move: U || R || D || L }
+    @returns {action: 'Success', move: U || R || D || L || null}
     || {err: err, action: 'Failed'}
   */
 
   continue: function() {
-    return this.listState.executeNextCall();
+    return this.delete(false);
   },
 };
 
