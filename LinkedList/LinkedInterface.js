@@ -71,7 +71,7 @@ const LinkedInterface = {
         move: createResult.move,
         delete: createResult.delete,
       };
-    } else if (delete ==1 ) {
+    } else if (deleteResult == 1) {
       returner = {action: 'Success', done: true};
     } else {
       returner = {action: 'Failed', err: deleteResult};

@@ -42,6 +42,24 @@ class LinkedX extends LinkedObject {
     }
     return 0;
   }
+
+  deleteMe(mark) {
+    if (mark && !this.markedForDeletion) {
+      this.markedForDeletion = 1;
+    }
+    returner = null;
+    if (this.next) {
+      returner = {obj: this.next, move: this.direction};
+    } else {
+      returner = {
+        delete: true,
+        deleteDirection: TileMath.getDirection(
+          TileMath.plus(TileMath.getNumber(this.entrance),2)),
+        postDeleteMove: this.entrance,
+      };
+    }
+    return returner;
+  }
 };
 
 module.exports = LinkedX;

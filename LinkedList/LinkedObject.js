@@ -51,11 +51,6 @@ class LinkedObject {
     if (mark && !this.markedForDeletion) {
       this.markedForDeletion = 1;
     }
-
-    return this.checkDeleteLinks();
-  }
-
-  checkDeleteLinks() {
     returner = null;
     if (this.next) {
       returner = {obj: this.next, move: this.direction};
