@@ -1,6 +1,6 @@
 
 const LinkedObject = require('./LinkedObject');
-const TileMath = require('../React/TileMath');
+const TileMath = require('./Util/TileMath');
 
 class LinkedT extends LinkedObject {
   constructor(prevObj, val, direction, entrance) {
@@ -11,20 +11,20 @@ class LinkedT extends LinkedObject {
     let d = TileMath.getNumber(direction);
     let e = TileMath.getNumber(entrance);
     if (d == e) {
-      let r = TileMath.getDirection(TileMath.minus(e,1));
-      let l = TileMath.getDirection(TileMath.plus(e,1));
+      var r = TileMath.getDirection(TileMath.minus(e,1));
+      var l = TileMath.getDirection(TileMath.plus(e,1));
       this.nextDir = [r,l];
     } else if (d == TileMath.plus(e,1)) {
-      let a = TileMath.getDirection(TileMath.minus(e,2));
-      let r = TileMath.getDirection(TileMath.minus(e,1));
+      var a = TileMath.getDirection(TileMath.minus(e,2));
+      var r = TileMath.getDirection(TileMath.minus(e,1));
       this.nextDir = [a,r];
     } else if (d == TileMath.minus(e,1)) {
-      let l = TileMath.getDirection(TileMath.plus(e,1));
-      let a = TileMath.getDirection(TileMath.plus(e,2));
+      var l = TileMath.getDirection(TileMath.plus(e,1));
+      var a = TileMath.getDirection(TileMath.plus(e,2));
       this.nextDir = [l,a]
     }
 
-    this.getNext = this.getNext.bind(this);
+    this.deleted = 0;
   }
 
   // Count links clockwise
@@ -54,13 +54,33 @@ class LinkedT extends LinkedObject {
     return 0;
   }
 
+  nextDelete() {
+    var returner = null;
+    if (this.deleted < 2) {
+      for (d in this.nextObj) {
+        this.deleted = +1;
+        if (this.nextObj[d]) {
+          returner = d;
+          break;
+        }
+      }
+    } else if (this.deleted == 2) {
+      returner = false;
+    }
+    return returner
+  }
+
   deleteMe(mark) {
     if (mark && !this.markedForDeletion) {
       this.markedForDeletion = 1;
     }
     returner = null;
-    if (this.next) {
-      returner = {obj: this.next, move: this.direction};
+    var toDelete = this.nextDelete();
+    if (toDelete) {
+      returner = {obj: nextObj[toDelete], move: this.nextDir[toDelete]};
+      if (this.deleted == 1) {
+        this.markedForDeletion = 2;
+      }
     } else {
       returner = {
         delete: true,

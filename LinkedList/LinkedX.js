@@ -1,5 +1,6 @@
 
 const LinkedObject = require('./LinkedObject');
+const TileMath = require('./Util/TileMath');
 
 class LinkedX extends LinkedObject {
   constructor(prevObj, val, direction, entrance) {
@@ -43,13 +44,33 @@ class LinkedX extends LinkedObject {
     return 0;
   }
 
+  nextDelete() {
+    var returner = null;
+    if (this.deleted < 3) {
+      for (d in this.nextObj) {
+        this.deleted = +1;
+        if (this.nextObj[d]) {
+          returner = d;
+          break;
+        }
+      }
+    } else if (this.deleted == 3) {
+      returner = false;
+    }
+    return returner
+  }
+
   deleteMe(mark) {
     if (mark && !this.markedForDeletion) {
       this.markedForDeletion = 1;
     }
     returner = null;
-    if (this.next) {
-      returner = {obj: this.next, move: this.direction};
+    var toDelete = this.nextDelete();
+    if (toDelete) {
+      returner = {obj: nextObj[toDelete], move: this.nextDir[toDelete]};
+      if (this.deleted == 2) {
+        this.markedForDeletion = 2;
+      }
     } else {
       returner = {
         delete: true,

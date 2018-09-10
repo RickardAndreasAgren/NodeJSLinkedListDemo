@@ -20,6 +20,7 @@ class LinkedI extends LinkedObject {
     }
     return 0;
   }
+
 };
 
 module.exports = LinkedI;

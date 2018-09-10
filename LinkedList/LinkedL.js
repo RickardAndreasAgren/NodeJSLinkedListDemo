@@ -1,6 +1,6 @@
 
 const LinkedObject = require('./LinkedObject');
-const TileMath = require('../React/TileMath');
+const TileMath = require('./Util/TileMath');
 
 class LinkedL extends LinkedObject {
   constructor(prevObj, val, direction, entrance) {

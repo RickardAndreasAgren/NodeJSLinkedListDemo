@@ -4,7 +4,8 @@ Make placer
     update on success
     or error report
 
-Recieve routes
+Linked T delete rotation
+Linked X delete rotation
 
 Upgrade LinkedObject to be able to handle
   T&X

@@ -19,8 +19,6 @@ class LinkedList {
     this.changeStart = this.changeStart.bind(this);
     this.addLink = this.addLink.bind(this);
     this.removeLink = this.removeLink.bind(this);
-    this.executeNextCall = this.executeNextCall.bind(this);
-    this.nextCall = () => {console.log('No next call set')};
   }
 
   changeStart() {
@@ -39,7 +37,7 @@ class LinkedList {
 
   removeLink(startDelete) {
     var returner = null;
-    if (!this.activeLink.markedForDeletion) {
+    if (this.activeLink.marked == 0) {
       this.deleting = false;
     } else if (startDelete) {
       this.deleting = startDelete;

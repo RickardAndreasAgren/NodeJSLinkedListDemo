@@ -1,4 +1,6 @@
 
+const TileMath = require('./Util/TileMath');
+
 class LinkedObject {
 
   constructor(prevObj, val, direction, entrance) {
@@ -12,6 +14,7 @@ class LinkedObject {
     this.entrance = entrance;
     this.val = val ? val : '1';
     this.nextObj = null;
+    this.markedForDeletion = 0;
 
     this.deleteMe = this.deleteMe.bind(this);
     this.deleteNext = this.this.deleteNext.bind(this);
@@ -35,6 +38,11 @@ class LinkedObject {
     return 0;
   }
 
+  set marked(val) {
+    this.markedForDeletion = val;
+    return 0;
+  }
+
   get next() {
     return this.nextObj;
   }
@@ -47,12 +55,17 @@ class LinkedObject {
     return this.val;
   }
 
+  get marked() {
+    return this.markedForDeletion;
+  }
+
   deleteMe(mark) {
     if (mark && !this.markedForDeletion) {
       this.markedForDeletion = 1;
     }
     returner = null;
     if (this.next) {
+      this.markedForDeletion = 2;
       returner = {obj: this.next, move: this.direction};
     } else {
       returner = {
