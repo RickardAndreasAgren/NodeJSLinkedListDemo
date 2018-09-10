@@ -4,13 +4,7 @@ Make placer
     update on success
     or error report
 
-Linked T delete rotation
-Linked X delete rotation
-
-Upgrade LinkedObject to be able to handle
-  T&X
-
-Create API in LinkedList
+update LinkedList.removeLink
 
 change mode to place
   : use origin, default direction to opposite

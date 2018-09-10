@@ -33,11 +33,12 @@ class LinkedList {
 
   traverseLink(direction) {
     this.activeLink = this.activeLink.move(direction);
+    return 0;
   }
 
   removeLink(startDelete) {
     var returner = null;
-    if (this.activeLink.marked == 0) {
+    if (this.deleting == true && this.activeLink.marked == 0) {
       this.deleting = false;
     } else if (startDelete) {
       this.deleting = startDelete;
@@ -50,9 +51,10 @@ class LinkedList {
       if (next.move && next.move in ['U','R','D','L']) {
         this.activeLink = this.activeLink.move(next.move);
         returner = {move: next.obj.move, delete: 0};
-      } else if (next.delete) {
+      } else if (next.delete == 1) {
         var killDirection = next.deleteDirection;
         this.activeLink = this.activeLink.prev;
+        // TODO FIX for T & X
         this.activeLink.next = {obj: null};
 
         returner = {move: next.postDeleteMove, delete: 1};

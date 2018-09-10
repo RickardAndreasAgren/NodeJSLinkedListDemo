@@ -65,11 +65,11 @@ const LinkedInterface = {
   delete: function(start) {
     var returner = null;
     var deleteResult = this.listState.removeLink(start);
-    if (typeof deleteResult == 'string') {
+    if (deleteResult.move && typeof deleteResult.move == 'string') {
       returner = {
         action: 'Success',
-        move: createResult.move,
-        delete: createResult.delete,
+        move: deleteResult.move,
+        delete: deleteResult.delete,
       };
     } else if (deleteResult == 1) {
       returner = {action: 'Success', done: true};

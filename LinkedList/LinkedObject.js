@@ -69,7 +69,7 @@ class LinkedObject {
       returner = {obj: this.next, move: this.direction};
     } else {
       returner = {
-        delete: true,
+        delete: 1,
         deleteDirection: TileMath.getDirection(
           TileMath.plus(TileMath.getNumber(this.entrance),2)),
         postDeleteMove: this.entrance,

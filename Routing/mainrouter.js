@@ -12,10 +12,10 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
       return linkedbackend.init();
     })
     .then(function(done) {
-      if (done) {
+      if (!done.err) {
         res.status(200).json({action: 'Success'});
       } else {
-        throw new Error(done);
+        throw new Error(done.err);
       }
     })
     .catch(function(err) {
@@ -29,10 +29,10 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
       return linkedbackend.move(req.body.direction);
     })
     .then(function(done) {
-      if (done) {
-        res.status(200).json({action: 'Success'});
+      if (!done.err) {
+        res.status(200).json(done);
       } else {
-        throw new Error(done);
+        throw new Error(done.err);
       }
     })
     .catch(function(err) {
@@ -47,10 +47,10 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
       return linkedbackend.create(args.direction, args.type, args.entrance);
     })
     .then(function(done) {
-      if (done) {
-        res.status(200).json({action: 'Success'});
+      if (!done.err) {
+        res.status(200).json(done);
       } else {
-        throw new Error(done);
+        throw new Error(done.err);
       }
     })
     .catch(function(err) {
@@ -64,10 +64,10 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
       return linkedbackend.delete(true);
     })
     .then(function(done) {
-      if (done) {
-        res.status(200).json({action: 'Success', move: done});
+      if (!done.err) {
+        res.status(200).json(done);
       } else {
-        throw new Error(done);
+        throw new Error(done.err);
       }
     })
     .catch(function(err) {
@@ -81,10 +81,10 @@ module.exports = function(homedir, mainRouter, debug, linkedbackend) {
       return linkedbackend.continue();
     })
     .then(function(done) {
-      if (done) {
-        res.status(200).json({action: 'Success', move: done});
+      if (!done.err) {
+        res.status(200).json(done);
       } else {
-        throw new Error(done);
+        throw new Error(done.err);
       }
     })
     .catch(function(err) {
