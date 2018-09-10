@@ -54,8 +54,12 @@ class LinkedList {
       } else if (next.delete == 1) {
         var killDirection = next.deleteDirection;
         this.activeLink = this.activeLink.prev;
-        // TODO FIX for T & X
-        this.activeLink.next = {obj: null};
+        if (next.tx) {
+          this.activeLink.nextObj[
+            activeLink.nextDir.indexOf(killDirection)] = null;
+        } else {
+          this.activeLink.next = null;
+        }
 
         returner = {move: next.postDeleteMove, delete: 1};
       }

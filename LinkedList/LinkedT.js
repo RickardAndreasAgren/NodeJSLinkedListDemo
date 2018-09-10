@@ -87,6 +87,7 @@ class LinkedT extends LinkedObject {
         deleteDirection: TileMath.getDirection(
           TileMath.plus(TileMath.getNumber(this.entrance),2)),
         postDeleteMove: this.entrance,
+        tx: true,
       };
     }
     return returner;
