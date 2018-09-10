@@ -17,7 +17,7 @@ class LinkedObject {
     this.markedForDeletion = 0;
 
     this.deleteMe = this.deleteMe.bind(this);
-    this.deleteNext = this.this.deleteNext.bind(this);
+    this.nextDelete = this.nextDelete.bind(this);
     this.pop = this.pop.bind(this);
     this.popMe = this.popMe.bind(this);
     this.popStart = this.popStart.bind(this);
@@ -57,6 +57,10 @@ class LinkedObject {
 
   get marked() {
     return this.markedForDeletion;
+  }
+
+  nextDelete() {
+    return null;
   }
 
   deleteMe(mark) {

@@ -45,6 +45,7 @@ var placeOrMove = 'move'; // 'move' || 'place';
 var focusInput = false;
 var inputValue = '0';
 var forceUpdate = false;
+var drawField = false;
 
 var xpos = 9;
 var ypos = 18;
@@ -59,23 +60,52 @@ var fieldMatrix = [];
 
 
 const StateManager = {
-  getState: function(init) {
-    if (init == 1) {
-      for (var i = 0; i < 19; i++) {
-        var newArray = [];
-        for (var j = 0; j < 19; j++) {
-          newArray.push(JSON.parse(JSON.stringify(deadTile)));
-        };
-        fieldMatrix.push(newArray);
-      }
-    }
-    fieldMatrix[9][18] = {
-      origin: 'D',
-      direction: 'U',
-      tileType: 'I',
-      placed: true,
-    };
+
+  getState: function() {
     return getAppState();
+  },
+
+  init: function(fireUpdate) {
+    return new Promise((resolve,reject) => {
+      console.log('Initializing server state');
+      resolve(ClientAPIHelper.init());
+    })
+    .then(function(serverInit) {
+      console.log(serverInit);
+      var returner = null;
+      if (serverInit) {
+        for (var i = 0; i < 19; i++) {
+          var newArray = [];
+          for (var j = 0; j < 19; j++) {
+            newArray.push(JSON.parse(JSON.stringify(deadTile)));
+          };
+          fieldMatrix.push(newArray);
+        }
+        returner = true;
+      } else {
+        returner = false;
+      }
+      return returner;
+    })
+    .then(() => {
+      fieldMatrix[9][18] = {
+        origin: 'D',
+        direction: 'U',
+        tileType: 'I',
+        placed: true,
+      };
+      setDrawField(true)
+      console.log('Field init complete');
+      console.log(fieldMatrix);
+      setForceUpdate(true);
+      fireUpdate();
+      return true;
+    })
+    .catch(function(err) {
+      console.log(err)
+      return false;
+    })
+
   },
 
   setFocus: function(tof) {
@@ -532,6 +562,14 @@ function getLock() {
   return lock;
 }
 
+function setDrawField(tof) {
+  drawField = tof;
+}
+
+function getDrawField() {
+  return drawfield;
+}
+
 function setField(x,y,tileUpdate) {
   fieldMatrix[x][y] = tileUpdate;
 }
@@ -562,6 +600,7 @@ function getAppState() {
     keyField: inputValue,
     focusOn: focusInput,
     forceUpdate: forceUpdate,
+    drawField: drawField,
   };
 }
 

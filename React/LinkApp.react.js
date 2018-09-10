@@ -10,14 +10,17 @@ class LinkApp extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = StateManager.getState(1);
     this.keyInputRef = null;
+    this.needInit = true;
 
+    this.fireUpdate = this.fireUpdate.bind(this);
     this.componentWillUpdate = this.componentWillUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
     //This.sendMouseToInput = this.sendMouseToInput.bind(this);
     this.handleKeyInput = this.handleKeyInput.bind(this);
+
+    this.state = StateManager.getState();
 
     this.setKeyInputRef = element => {
       this.keyInputRef = element;
@@ -37,6 +40,10 @@ class LinkApp extends React.Component {
     }
   }
 
+  fireUpdate() {
+    this.setState(StateManager.getState());
+  }
+
   componentWillUpdate() {
     console.log('LinkApp will update');
   }
@@ -44,6 +51,10 @@ class LinkApp extends React.Component {
   componentDidMount() {
     console.log('DidMount');
     console.log(this.state);
+    if (this.needInit) {
+      this.needInit = false
+      StateManager.init(this.fireUpdate);
+    }
 
     this.focusKeyInputRef();
   }
@@ -101,14 +112,18 @@ class LinkApp extends React.Component {
             </div>
           </div>
         </div>
-        <FieldContainer gridField={this.state.field.gridField}
-          position={this.state.field.pos}
-          forceUpdate={this.state.forceUpdate}
-          sendMouseFunc={this.sendMouseToInput}
-          updateDoneFunc={() => {StateManager.toggleForceUpdate(false)}}/>
-        <InfoContainer password={this.state.info.password}
-          error={this.state.info.error}
-          mode={this.state.info.mode}/>
+        { this.state.drawField &&
+          <FieldContainer gridField={this.state.field.gridField}
+            position={this.state.field.pos}
+            forceUpdate={this.state.forceUpdate}
+            sendMouseFunc={this.sendMouseToInput}
+            updateDoneFunc={() => {StateManager.toggleForceUpdate(false)}}/>
+        }
+        { this.state.info &&
+          <InfoContainer password={this.state.info.pw}
+            error={this.state.info.error}
+            mode={this.state.info.mode}/>
+        }
       </div>
     );
   }

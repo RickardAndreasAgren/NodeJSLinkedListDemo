@@ -15,6 +15,7 @@ const LinkedInterface = {
 
   init: function() {
     this.listState = new LinkedList();
+    console.log('Created new LinkedList');
     return true;
   },
 

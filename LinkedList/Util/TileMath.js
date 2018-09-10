@@ -44,4 +44,4 @@ const TileMath = {
   },
 }
 
-module.exports = LinkedX;
+module.exports = TileMath;

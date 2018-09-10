@@ -121,7 +121,7 @@ var FieldContainer = function (_React$Component) {
 
 exports.default = FieldContainer;
 
-},{"./FieldLayout.react":2,"react":39}],2:[function(require,module,exports){
+},{"./FieldLayout.react":2,"react":38}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -248,7 +248,7 @@ var FieldLayout = function (_React$Component) {
 
 exports.default = FieldLayout;
 
-},{"./FieldTile.react":3,"react":39}],3:[function(require,module,exports){
+},{"./FieldTile.react":3,"react":38}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -377,7 +377,7 @@ var FieldTile = function (_React$Component) {
 
 exports.default = FieldTile;
 
-},{"../Util/TranslatePropsToTile":14,"react":39}],4:[function(require,module,exports){
+},{"../Util/TranslatePropsToTile":14,"react":38}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -448,7 +448,7 @@ var InfoContainer = function (_React$Component) {
 
 exports.default = InfoContainer;
 
-},{"react":39}],5:[function(require,module,exports){
+},{"react":38}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -489,14 +489,17 @@ var LinkApp = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (LinkApp.__proto__ || Object.getPrototypeOf(LinkApp)).call(this, props));
 
-    _this.state = _StateManager2.default.getState(1);
     _this.keyInputRef = null;
+    _this.needInit = true;
 
+    _this.fireUpdate = _this.fireUpdate.bind(_this);
     _this.componentWillUpdate = _this.componentWillUpdate.bind(_this);
     _this.componentDidMount = _this.componentDidMount.bind(_this);
     _this.componentDidUpdate = _this.componentDidUpdate.bind(_this);
     //This.sendMouseToInput = this.sendMouseToInput.bind(this);
     _this.handleKeyInput = _this.handleKeyInput.bind(_this);
+
+    _this.state = _StateManager2.default.getState();
 
     _this.setKeyInputRef = function (element) {
       _this.keyInputRef = element;
@@ -518,6 +521,11 @@ var LinkApp = function (_React$Component) {
   }
 
   _createClass(LinkApp, [{
+    key: 'fireUpdate',
+    value: function fireUpdate() {
+      this.setState(_StateManager2.default.getState());
+    }
+  }, {
     key: 'componentWillUpdate',
     value: function componentWillUpdate() {
       console.log('LinkApp will update');
@@ -527,6 +535,10 @@ var LinkApp = function (_React$Component) {
     value: function componentDidMount() {
       console.log('DidMount');
       console.log(this.state);
+      if (this.needInit) {
+        this.needInit = false;
+        _StateManager2.default.init(this.fireUpdate);
+      }
 
       this.focusKeyInputRef();
     }
@@ -601,14 +613,14 @@ var LinkApp = function (_React$Component) {
             )
           )
         ),
-        _react2.default.createElement(_FieldContainer2.default, { gridField: this.state.field.gridField,
+        this.state.drawField && _react2.default.createElement(_FieldContainer2.default, { gridField: this.state.field.gridField,
           position: this.state.field.pos,
           forceUpdate: this.state.forceUpdate,
           sendMouseFunc: this.sendMouseToInput,
           updateDoneFunc: function updateDoneFunc() {
             _StateManager2.default.toggleForceUpdate(false);
           } }),
-        _react2.default.createElement(_InfoContainer2.default, { password: this.state.info.password,
+        this.state.info && _react2.default.createElement(_InfoContainer2.default, { password: this.state.info.pw,
           error: this.state.info.error,
           mode: this.state.info.mode })
       );
@@ -620,7 +632,7 @@ var LinkApp = function (_React$Component) {
 
 exports.default = LinkApp;
 
-},{"./Components/FieldContainer.react":1,"./Components/InfoContainer.react":4,"./StateManager":7,"react":39}],6:[function(require,module,exports){
+},{"./Components/FieldContainer.react":1,"./Components/InfoContainer.react":4,"./StateManager":7,"react":38}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -721,6 +733,7 @@ var placeOrMove = 'move'; // 'move' || 'place';
 var focusInput = false;
 var inputValue = '0';
 var forceUpdate = false;
+var drawField = false;
 
 var xpos = 9;
 var ypos = 18;
@@ -732,23 +745,48 @@ var lock = false;
 var fieldMatrix = [];
 
 var StateManager = {
-  getState: function getState(init) {
-    if (init == 1) {
-      for (var i = 0; i < 19; i++) {
-        var newArray = [];
-        for (var j = 0; j < 19; j++) {
-          newArray.push(JSON.parse(JSON.stringify(deadTile)));
-        };
-        fieldMatrix.push(newArray);
-      }
-    }
-    fieldMatrix[9][18] = {
-      origin: 'D',
-      direction: 'U',
-      tileType: 'I',
-      placed: true
-    };
+
+  getState: function getState() {
     return getAppState();
+  },
+
+  init: function init(fireUpdate) {
+    return new Promise(function (resolve, reject) {
+      console.log('Initializing server state');
+      resolve(_ClientAPIHelper2.default.init());
+    }).then(function (serverInit) {
+      console.log(serverInit);
+      var returner = null;
+      if (serverInit) {
+        for (var i = 0; i < 19; i++) {
+          var newArray = [];
+          for (var j = 0; j < 19; j++) {
+            newArray.push(JSON.parse(JSON.stringify(deadTile)));
+          };
+          fieldMatrix.push(newArray);
+        }
+        returner = true;
+      } else {
+        returner = false;
+      }
+      return returner;
+    }).then(function () {
+      fieldMatrix[9][18] = {
+        origin: 'D',
+        direction: 'U',
+        tileType: 'I',
+        placed: true
+      };
+      setDrawField(true);
+      console.log('Field init complete');
+      console.log(fieldMatrix);
+      setForceUpdate(true);
+      fireUpdate();
+      return true;
+    }).catch(function (err) {
+      console.log(err);
+      return false;
+    });
   },
 
   setFocus: function setFocus(tof) {
@@ -1171,6 +1209,14 @@ function getLock() {
   return lock;
 }
 
+function setDrawField(tof) {
+  drawField = tof;
+}
+
+function getDrawField() {
+  return drawfield;
+}
+
 function setField(x, y, tileUpdate) {
   fieldMatrix[x][y] = tileUpdate;
 }
@@ -1200,7 +1246,8 @@ function getAppState() {
     },
     keyField: inputValue,
     focusOn: focusInput,
-    forceUpdate: forceUpdate
+    forceUpdate: forceUpdate,
+    drawField: drawField
   };
 }
 
@@ -1479,12 +1526,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _objectToFormdata = require('object-to-formdata');
-
-var _objectToFormdata2 = _interopRequireDefault(_objectToFormdata);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /* Endpoints:
   init
   move direction
@@ -1593,6 +1634,7 @@ var ClientAPIHelper = {
   // Call method, path target, object data
 
   dataRequestPromise: function dataRequestPromise(method, target, data) {
+    console.log('Starting request promise chain');
     var helper = this;
     return new Promise(function (resolve, reject) {
       var request = new XMLHttpRequest();
@@ -1603,8 +1645,12 @@ var ClientAPIHelper = {
         data: data
       });
     }).then(function (argblob) {
+      console.log(argblob);
+      console.log('Preparing request data');
       return helper.prepareRequestPromise(argblob.xhr, argblob.data);
     }).then(function (argblob) {
+      console.log(argblob);
+      console.log('Calling send');
       return helper.promisedSend(argblob);
     });
   },
@@ -1613,10 +1659,10 @@ var ClientAPIHelper = {
     var helper = this;
     return new Promise(function (resolve, reject) {
       request.setRequestHeader('Accept', 'text/html');
-      helper.makeQueryPromise(data);
+      resolve(helper.makeQueryPromise(data));
     }).then(function (sendData) {
       console.log('SendData', sendData);
-      resolve({ xhr: request, data: sendData });
+      return { xhr: request, data: sendData };
     });
   },
 
@@ -1643,7 +1689,7 @@ var ClientAPIHelper = {
 
 exports.default = ClientAPIHelper;
 
-},{"object-to-formdata":30}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2270,7 +2316,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = emptyObject;
 }).call(this,require('_process'))
-},{"_process":31}],21:[function(require,module,exports){
+},{"_process":30}],21:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2431,7 +2477,7 @@ function invariant(condition, format, a, b, c, d, e, f) {
 
 module.exports = invariant;
 }).call(this,require('_process'))
-},{"_process":31}],25:[function(require,module,exports){
+},{"_process":30}],25:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2608,7 +2654,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = warning;
 }).call(this,require('_process'))
-},{"./emptyFunction":19,"_process":31}],29:[function(require,module,exports){
+},{"./emptyFunction":19,"_process":30}],29:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -2701,98 +2747,6 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 };
 
 },{}],30:[function(require,module,exports){
-'use strict'
-
-function isUndefined (value) {
-  return value === undefined
-}
-
-function isNull (value) {
-  return value === null
-}
-
-function isObject (value) {
-  return value === Object(value)
-}
-
-function isArray (value) {
-  return Array.isArray(value)
-}
-
-function isDate (value) {
-  return value instanceof Date
-}
-
-function isBlob (value) {
-  return value &&
-    typeof value.size === 'number' &&
-    typeof value.type === 'string' &&
-    typeof value.slice === 'function'
-}
-
-function isFile (value) {
-  return isBlob(value) &&
-    (typeof value.lastModifiedDate === 'object' || typeof value.lastModified === 'number') &&
-    typeof value.name === 'string'
-}
-
-function isFormData (value) {
-  return value instanceof FormData
-}
-
-function objectToFormData (obj, cfg, fd, pre) {
-  if (isFormData(cfg)) {
-    pre = fd
-    fd = cfg
-    cfg = null
-  }
-
-  cfg = cfg || {}
-  cfg.indices = cfg.indices || false
-  fd = fd || new FormData()
-
-  if (isUndefined(obj)) {
-    return fd
-  } else if (isNull(obj)) {
-    fd.append(pre, '')
-  } else if (isArray(obj)) {
-    if (!obj.length) {
-      var key = pre + '[]'
-
-      fd.append(key, '')
-    } else {
-      obj.forEach(function (value, index) {
-        var key = pre + '[' + (cfg.indices ? index : '') + ']'
-
-        objectToFormData(value, cfg, fd, key)
-      })
-    }
-  } else if (isDate(obj)) {
-    fd.append(pre, obj.toISOString())
-  } else if (isObject(obj) && !isFile(obj) && !isBlob(obj)) {
-    Object.keys(obj).forEach(function (prop) {
-      var value = obj[prop]
-
-      if (isArray(value)) {
-        while (prop.length > 2 && prop.lastIndexOf('[]') === prop.length - 2) {
-          prop = prop.substring(0, prop.length - 2)
-        }
-      }
-
-      var key = pre ? (pre + '[' + prop + ']') : prop
-
-      objectToFormData(value, cfg, fd, key)
-    })
-  } else {
-    fd.append(pre, obj)
-  }
-
-  return fd
-}
-
-module.exports = objectToFormData
-
-},{}],31:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2978,7 +2932,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -3073,7 +3027,7 @@ function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
 module.exports = checkPropTypes;
 
 }).call(this,require('_process'))
-},{"./lib/ReactPropTypesSecret":33,"_process":31}],33:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":32,"_process":30}],32:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -3087,7 +3041,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function (process){
 /** @license React v16.4.2
  * react-dom.development.js
@@ -20522,7 +20476,7 @@ module.exports = reactDom;
 }
 
 }).call(this,require('_process'))
-},{"_process":31,"fbjs/lib/ExecutionEnvironment":15,"fbjs/lib/camelizeStyleName":17,"fbjs/lib/containsNode":18,"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/getActiveElement":21,"fbjs/lib/hyphenateStyleName":23,"fbjs/lib/invariant":24,"fbjs/lib/shallowEqual":27,"fbjs/lib/warning":28,"object-assign":29,"prop-types/checkPropTypes":32,"react":39}],35:[function(require,module,exports){
+},{"_process":30,"fbjs/lib/ExecutionEnvironment":15,"fbjs/lib/camelizeStyleName":17,"fbjs/lib/containsNode":18,"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/getActiveElement":21,"fbjs/lib/hyphenateStyleName":23,"fbjs/lib/invariant":24,"fbjs/lib/shallowEqual":27,"fbjs/lib/warning":28,"object-assign":29,"prop-types/checkPropTypes":31,"react":38}],34:[function(require,module,exports){
 /** @license React v16.4.2
  * react-dom.production.min.js
  *
@@ -20764,7 +20718,7 @@ var wi={createPortal:vi,findDOMNode:function(a){return null==a?null:1===a.nodeTy
 arguments)},unstable_batchedUpdates:ci,unstable_deferredUpdates:Ih,unstable_interactiveUpdates:fi,flushSync:ei,unstable_flushControlled:gi,__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{EventPluginHub:Ka,EventPluginRegistry:va,EventPropagators:$a,ReactControlledComponent:Rb,ReactDOMComponentTree:Qa,ReactDOMEventListener:Od},unstable_createRoot:function(a,b){return new ri(a,!0,null!=b&&!0===b.hydrate)}};li({findFiberByHostInstance:Na,bundleType:0,version:"16.4.2",rendererPackageName:"react-dom"});
 var Bi={default:wi},Ci=Bi&&wi||Bi;module.exports=Ci.default?Ci.default:Ci;
 
-},{"fbjs/lib/ExecutionEnvironment":15,"fbjs/lib/containsNode":18,"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/getActiveElement":21,"fbjs/lib/invariant":24,"fbjs/lib/shallowEqual":27,"object-assign":29,"react":39}],36:[function(require,module,exports){
+},{"fbjs/lib/ExecutionEnvironment":15,"fbjs/lib/containsNode":18,"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/getActiveElement":21,"fbjs/lib/invariant":24,"fbjs/lib/shallowEqual":27,"object-assign":29,"react":38}],35:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -20806,7 +20760,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":34,"./cjs/react-dom.production.min.js":35,"_process":31}],37:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":33,"./cjs/react-dom.production.min.js":34,"_process":30}],36:[function(require,module,exports){
 (function (process){
 /** @license React v16.4.2
  * react.development.js
@@ -22296,7 +22250,7 @@ module.exports = react;
 }
 
 }).call(this,require('_process'))
-},{"_process":31,"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/invariant":24,"fbjs/lib/warning":28,"object-assign":29,"prop-types/checkPropTypes":32}],38:[function(require,module,exports){
+},{"_process":30,"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/invariant":24,"fbjs/lib/warning":28,"object-assign":29,"prop-types/checkPropTypes":31}],37:[function(require,module,exports){
 /** @license React v16.4.2
  * react.production.min.js
  *
@@ -22320,7 +22274,7 @@ _calculateChangedBits:b,_defaultValue:a,_currentValue:a,_currentValue2:a,_change
 b.key&&(g=""+b.key);var l=void 0;a.type&&a.type.defaultProps&&(l=a.type.defaultProps);for(c in b)K.call(b,c)&&!L.hasOwnProperty(c)&&(d[c]=void 0===b[c]&&void 0!==l?l[c]:b[c])}c=arguments.length-2;if(1===c)d.children=e;else if(1<c){l=Array(c);for(var m=0;m<c;m++)l[m]=arguments[m+2];d.children=l}return{$$typeof:t,type:a.type,key:g,ref:h,props:d,_owner:f}},createFactory:function(a){var b=M.bind(null,a);b.type=a;return b},isValidElement:N,version:"16.4.2",__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentOwner:J,
 assign:k}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default?Z.default:Z;
 
-},{"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/invariant":24,"object-assign":29}],39:[function(require,module,exports){
+},{"fbjs/lib/emptyFunction":19,"fbjs/lib/emptyObject":20,"fbjs/lib/invariant":24,"object-assign":29}],38:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -22331,7 +22285,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":37,"./cjs/react.production.min.js":38,"_process":31}],40:[function(require,module,exports){
+},{"./cjs/react.development.js":36,"./cjs/react.production.min.js":37,"_process":30}],39:[function(require,module,exports){
 'use strict';
 
 var _react = require('react');
@@ -22350,4 +22304,4 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 _reactDom2.default.render(_react2.default.createElement(_LinkApp2.default, null), document.getElementById('home'));
 
-},{"../../React/LinkApp.react":5,"react":39,"react-dom":36}]},{},[40]);
+},{"../../React/LinkApp.react":5,"react":38,"react-dom":35}]},{},[39]);

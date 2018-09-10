@@ -12,24 +12,29 @@ const cts = require('./constants')();
 const LinkedInterface = require('./LinkedList/LinkedInterface');
 
 var mainRouter = express.Router();
+var protectedRouter = express.Router();
 
 var serverState = LinkedInterface;
 serverState.init();
 
-app.use(bodyparser);
+app.use(bodyparser.urlencoded({ extended: false }))
+
+require('./Routing/mainrouter')(__dirname, mainRouter, cts.DEBUG, serverState);
+
+require('./Routing/protectedrouter')(__dirname, protectedRouter, cts.DEBUG,
+  serverState);
+
+app.use(mainRouter);
 
 app.use(function(req,res,next) {
   if (req.body.password == cts.PASSWORD) {
     next();
   } else {
-    res.stats(200).json({password: 'Invalid'});
+    res.status(200).json({password: 'Invalid'});
   }
 });
 
-require('./Routing/mainrouter')(__dirname, mainRouter, cts.DEBUG,
-  serverState);
-
-app.use(mainRouter);
+app.use(protectedRouter);
 
 app.use(function(err, req, res, next) {
     if (err) {
@@ -41,6 +46,7 @@ app.use(function(err, req, res, next) {
     }
   }
 );
+
 
 console.log('Application running on port ' + cts.PORT);
 

@@ -4,8 +4,6 @@ Make placer
     update on success
     or error report
 
-update LinkedList.removeLink
-
 change mode to place
   : use origin, default direction to opposite
   : find placable tile option

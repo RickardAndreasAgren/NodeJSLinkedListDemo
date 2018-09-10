@@ -1,6 +1,4 @@
 
-import ObjectToFormdata from 'object-to-formdata';
-
 /* Endpoints:
   init
   move direction
@@ -9,7 +7,7 @@ import ObjectToFormdata from 'object-to-formdata';
   continue
 */
 
-var ClientAPIHelper = {
+const ClientAPIHelper = {
 
   buildParams: function(prefix, obj, add) {
     var name, i, l, rbracket;
@@ -112,6 +110,7 @@ var ClientAPIHelper = {
   // Call method, path target, object data
 
   dataRequestPromise: function(method, target, data) {
+    console.log('Starting request promise chain');
     var helper = this;
     return new Promise((resolve, reject) => {
       var request = new XMLHttpRequest();
@@ -124,9 +123,13 @@ var ClientAPIHelper = {
       });
     })
     .then(function(argblob) {
+      console.log(argblob);
+      console.log('Preparing request data');
       return helper.prepareRequestPromise(argblob.xhr, argblob.data);
     })
     .then(function(argblob) {
+      console.log(argblob);
+      console.log('Calling send');
       return helper.promisedSend(argblob);
     });
   },
@@ -135,11 +138,11 @@ var ClientAPIHelper = {
     var helper = this;
     return new Promise((resolve, reject) => {
       request.setRequestHeader('Accept', 'text/html');
-      helper.makeQueryPromise(data)
+      resolve(helper.makeQueryPromise(data));
     })
     .then(function(sendData) {
       console.log('SendData', sendData);
-      resolve({ xhr: request, data: sendData });
+      return {xhr: request, data: sendData };
     });
   },
 
