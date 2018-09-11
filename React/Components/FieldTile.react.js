@@ -53,7 +53,8 @@ class FieldTile extends React.Component {
 
   componentDidUpdate(prevProps) {
     this.props.tile != 'e' ? console.log('Tile did update') : null;
-    if (prevProps.tile != this.props.tile) {
+    if (prevProps.tile != this.props.tile ||
+      prevProps.placed != this.props.placed) {
       var _this = this;
       this.props.tile != 'e' ? console.log('Tile did update and set') : null;
       this.props.tile != 'e' ? console.log(this.props) : null;

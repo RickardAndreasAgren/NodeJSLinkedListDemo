@@ -25,6 +25,10 @@ class LinkedT extends LinkedObject {
     }
 
     this.deleted = 0;
+    this.move = this.move.bind(this);
+    this.setNext = this.setNext.bind(this);
+
+
   }
 
   // Count links clockwise

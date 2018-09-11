@@ -277,7 +277,7 @@ const StateManager = {
     })
     .then(function() {
       return ClientAPIHelper.move({
-
+        direction: intent,
         password: getPassword(),
       });
     })
@@ -285,12 +285,14 @@ const StateManager = {
       var returner = null;
       if (moveResult.action == 'Success') {
         returner = true;
-        setField(getX(),getY(),{
-          direction: '0',
-          origin: '0',
-          tileType: 'e',
-          placed: false,
-        });
+        if (!getPlaced()) {
+          setField(getX(),getY(),{
+            direction: '0',
+            origin: '0',
+            tileType: 'e',
+            placed: false,
+          });
+        }
         var change = directions[intent];
         setX(change.x + getX());
         setY(change.y + getY());
@@ -470,6 +472,13 @@ const StateManager = {
       var returner = null;
       if (createResult.action == 'Success') {
         setPlaced(true);
+        setField(getX(),getY(),{
+          origin: getOrigin(),
+          direction: getDirection(),
+          tileType: getCurrentTile(),
+          placed: true,
+        });
+        setForceUpdate(true);
         returner = true;
       } else if (createResult.err) {
         throw new Error(createResult.err);
@@ -480,6 +489,15 @@ const StateManager = {
     })
     .then(function(createOk) {
       return _this.changeMode();
+    })
+    .then(function(modeChanged) {
+      var returner = null;
+      if (!modeChanged.err) {
+        returner = true;
+      } else {
+        throw new Error(modeChanged.err);
+      }
+      return returner;
     });
   },
 };
@@ -487,7 +505,8 @@ const StateManager = {
 function getFullTile(xy) {
   var returner = null;
   if (xy) {
-    // Fetch from matrix and build relevant object
+    var xyObj = getField(false,xy.x,xy.y);
+    returner = Object.assign({x: xy.x, y: xy.y}, xyObj);
   } else {
     returner = {
       x: getX(),
@@ -495,6 +514,7 @@ function getFullTile(xy) {
       origin: getOrigin(),
       direction: getDirection(),
       type: getCurrentTile(),
+      placed: getPlaced(),
     }
   }
   return returner;

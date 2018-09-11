@@ -1,7 +1,7 @@
 
 module.exports = function(homedir, router, debug, linkedbackend) {
 
-  router.get('/move', function(req,res) {
+  router.post('/move', function(req,res) {
     new Promise((resolve,reject) => {
       resolve(linkedbackend.move(req.body.direction));
     })
@@ -54,7 +54,7 @@ module.exports = function(homedir, router, debug, linkedbackend) {
     })
   })
 
-  router.get('/continue', function(req,res) {
+  router.post('/continue', function(req,res) {
     new Promise((resolve,reject) => {
       resolve(linkedbackend.continue());
     })

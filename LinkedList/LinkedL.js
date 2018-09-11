@@ -15,10 +15,21 @@ class LinkedL extends LinkedObject {
     } else {
       this.val = 'R';
     }
+
+    this.move = this.move.bind(this);
+    this.setNext = this.setNext.bind(this);
+
+
   }
 
   move(direction) {
-    return this.nextObj;
+    var returner = null;
+    if (direction == this.direction) {
+      returner = this.nextObj;
+    } else {
+      returner = this.prevObj;
+    }
+    return returner;
   }
 
   setNext(next) {

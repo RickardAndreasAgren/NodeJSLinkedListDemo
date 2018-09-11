@@ -329,7 +329,7 @@ var FieldTile = function (_React$Component) {
       var _this4 = this;
 
       this.props.tile != 'e' ? console.log('Tile did update') : null;
-      if (prevProps.tile != this.props.tile) {
+      if (prevProps.tile != this.props.tile || prevProps.placed != this.props.placed) {
         var _this = this;
         this.props.tile != 'e' ? console.log('Tile did update and set') : null;
         this.props.tile != 'e' ? console.log(this.props) : null;
@@ -983,19 +983,21 @@ var StateManager = {
       resolve(setMode('move'));
     }).then(function () {
       return _ClientAPIHelper2.default.move({
-
+        direction: intent,
         password: getPassword()
       });
     }).then(function (moveResult) {
       var returner = null;
       if (moveResult.action == 'Success') {
         returner = true;
-        setField(getX(), getY(), {
-          direction: '0',
-          origin: '0',
-          tileType: 'e',
-          placed: false
-        });
+        if (!getPlaced()) {
+          setField(getX(), getY(), {
+            direction: '0',
+            origin: '0',
+            tileType: 'e',
+            placed: false
+          });
+        }
         var change = directions[intent];
         setX(change.x + getX());
         setY(change.y + getY());
@@ -1157,6 +1159,13 @@ var StateManager = {
       var returner = null;
       if (createResult.action == 'Success') {
         setPlaced(true);
+        setField(getX(), getY(), {
+          origin: getOrigin(),
+          direction: getDirection(),
+          tileType: getCurrentTile(),
+          placed: true
+        });
+        setForceUpdate(true);
         returner = true;
       } else if (createResult.err) {
         throw new Error(createResult.err);
@@ -1166,6 +1175,14 @@ var StateManager = {
       return returner;
     }).then(function (createOk) {
       return _this.changeMode();
+    }).then(function (modeChanged) {
+      var returner = null;
+      if (!modeChanged.err) {
+        returner = true;
+      } else {
+        throw new Error(modeChanged.err);
+      }
+      return returner;
     });
   }
 };
@@ -1173,14 +1190,16 @@ var StateManager = {
 function getFullTile(xy) {
   var returner = null;
   if (xy) {
-    // Fetch from matrix and build relevant object
+    var xyObj = getField(false, xy.x, xy.y);
+    returner = Object.assign({ x: xy.x, y: xy.y }, xyObj);
   } else {
     returner = {
       x: getX(),
       y: getY(),
       origin: getOrigin(),
       direction: getDirection(),
-      type: getCurrentTile()
+      type: getCurrentTile(),
+      placed: getPlaced()
     };
   }
   return returner;
@@ -1780,7 +1799,7 @@ var ClientAPIHelper = {
   },
 
   move: function move(data) {
-    return this.dataRequestPromise('GET', '/move', data);
+    return this.dataRequestPromise('POST', '/move', data);
   },
 
   create: function create(data) {
@@ -1792,7 +1811,7 @@ var ClientAPIHelper = {
   },
 
   continue: function _continue(data) {
-    return this.dataRequestPromise('GET', 'continue', data);
+    return this.dataRequestPromise('POST', 'continue', data);
   }
 };
 

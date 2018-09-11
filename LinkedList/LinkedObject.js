@@ -3,9 +3,13 @@ const TileMath = require('./Util/TileMath');
 
 class LinkedObject {
 
-  constructor(prevObj, val, direction, entrance) {
-    if (prevObj) {
-      this.prevObj = prevObj;
+  constructor(prev, val, direction, entrance) {
+    prev ? console.log('PO', prev) : console.log('PO not supplied');
+    console.log(val);
+    console.log(direction);
+    console.log(entrance);
+    if (prev) {
+      this.prevObj = prev;
     } else {
       this.prevObj = 'start';
     }
@@ -16,11 +20,12 @@ class LinkedObject {
     this.nextObj = null;
     this.markedForDeletion = 0;
 
-    this.deleteMe = this.deleteMe.bind(this);
+    /*
+    This.deleteMe = this.deleteMe.bind(this);
     this.nextDelete = this.nextDelete.bind(this);
     this.pop = this.pop.bind(this);
     this.popMe = this.popMe.bind(this);
-    this.popStart = this.popStart.bind(this);
+    this.popStart = this.popStart.bind(this); */
   }
 
   set next(next) {
@@ -63,8 +68,13 @@ class LinkedObject {
     return null;
   }
 
-  setNext(obj) {
-    this.nextObj = obj;
+  setNext(next) {
+    console.log('LO');
+    if (next.obj) {
+      this.nextObj = next.obj;
+    } else {
+      this.nextObj = next;
+    }
     return 0;
   }
 
@@ -130,6 +140,14 @@ class LinkedObject {
   popStart() {
     this.getNext().setPrev('start');
     return this.getVal();
+  }
+
+  printMe() {
+    console.log(this.entrance);
+    console.log(this.direction);
+    console.log(this.value);
+    this.prevObj ? console.log('Linked next') : null;
+    this.nextObj ? console.log('Linked prev') : null;
   }
 };
 

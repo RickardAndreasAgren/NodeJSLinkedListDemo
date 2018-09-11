@@ -15,6 +15,12 @@ class LinkedX extends LinkedObject {
     TileMath.getDirection(TileMath.plus(d,3)),];
     alldir.splice(e - 1, 1);
     this.nextDir = alldir;
+
+    this.deleted = 0;
+    this.move = this.move.bind(this);
+    this.setNext = this.setNext.bind(this);
+
+
   }
 
   // Count links clockwise

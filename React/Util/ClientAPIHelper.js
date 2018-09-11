@@ -151,7 +151,7 @@ const ClientAPIHelper = {
   },
 
   move: function(data) {
-    return this.dataRequestPromise('GET','/move',data);
+    return this.dataRequestPromise('POST','/move',data);
   },
 
   create: function(data) {
@@ -163,7 +163,7 @@ const ClientAPIHelper = {
   },
 
   continue: function(data) {
-    return this.dataRequestPromise('GET','continue',data);
+    return this.dataRequestPromise('POST','continue',data);
   },
 };
 
