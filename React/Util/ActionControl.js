@@ -18,7 +18,7 @@ import DirectionByTile from './DirectionByTile';
 */
 
 const ActionControl = {
-  move: function(intent, currentTile, fieldMatrix) {
+  move: function(intent, currentTile, fieldMatrix, notUsed) {
     console.log('Try Moving');
 
     return new Promise((resolve,reject) => {
@@ -57,6 +57,7 @@ const ActionControl = {
 
   lookupDestination: function(intent, currentTile, fieldMatrix) {
     var returner = null;
+    console.log('Looking up destination');
     let x = currentTile.x + ReactConstants.getDirections(intent).x;
     let y = currentTile.y + ReactConstants.getDirections(intent).y;
     if (x < 0 || x > (ReactConstants.getSize() - 1) || y < 0
@@ -97,6 +98,10 @@ const ActionControl = {
         direction: (intention ? intention : currentTile.direction),
         type: 'I',
       };
+    checkTile.type = intention == 'c' ? _this.cycleType('I') : checkTile.type;
+    checkTile.direction = intention == 'c' ?
+      _this.defaultDirection(checkTile) :
+      checkTile.direction;
     var loopLimit = currentTile.type;
     var directionCounter = 0;
     var changedTile = false;
@@ -115,12 +120,12 @@ const ActionControl = {
 
     return new Promise((resolve,reject) => {
       console.log('ACPp: ', intention);
-      if (!intention) {
+      if (!intention || !(intention in ['U','R','D','L'])) {
 
         const acceptableTile = (tileTry) => {
           return new Promise((iresolve, ireject) => {
             console.log('ACP: Look up exit');
-            console.log('')
+            console.log(tileTry)
             if (_this.lookupExit(tileTry.direction, tileTry, 'place')) {
               console.log('ACP: Found tile option');
               if (_this.lookupPlacingConnections(tileTry.direction,
@@ -232,6 +237,7 @@ const ActionControl = {
   },
 
   cycleType: function(type) {
+    console.log('Cycling tile type');
     var returner = type;
     switch (type) {
       case 'I': {
@@ -255,6 +261,14 @@ const ActionControl = {
       }
     }
     return returner;
+  },
+
+  defaultDirection: function(origin, tile) {
+
+    return new Promise((resolve,reject) => {
+      var a;
+      // By type verify direction is allowed from origin
+    })
   },
 }
 

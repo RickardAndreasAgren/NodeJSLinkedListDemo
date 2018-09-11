@@ -869,7 +869,7 @@ var StateManager = {
           } else {
             console.log('Checking non-arrow actions');
             // . e b s
-            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer() : actionIntention == 'b' ? _this.initiateDelete() : actionIntention == 't' ? _this.changeMode() : false;
+            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer('c') : actionIntention == 'b' ? _this.initiateDelete() : actionIntention == 't' ? _this.changeMode() : false;
           }
           console.log('Action results');
           console.log(returner);
@@ -1077,7 +1077,7 @@ var StateManager = {
       if (modeWasSet == 0) {
         if (getMode() == 'place') {
           console.log('Changing mode to place');
-          if (!getPlaced) {
+          if (!getPlaced()) {
             _this.changePlacer(false);
           } else if (getCurrentTile() != 'e') {
             setMode('move');
@@ -1416,7 +1416,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 */
 
 var ActionControl = {
-  move: function move(intent, currentTile, fieldMatrix) {
+  move: function move(intent, currentTile, fieldMatrix, notUsed) {
     var _this2 = this;
 
     console.log('Try Moving');
@@ -1453,6 +1453,7 @@ var ActionControl = {
 
   lookupDestination: function lookupDestination(intent, currentTile, fieldMatrix) {
     var returner = null;
+    console.log('Looking up destination');
     var x = currentTile.x + _ReactConstants2.default.getDirections(intent).x;
     var y = currentTile.y + _ReactConstants2.default.getDirections(intent).y;
     if (x < 0 || x > _ReactConstants2.default.getSize() - 1 || y < 0 || y > _ReactConstants2.default.getSize() - 1) {
@@ -1489,6 +1490,8 @@ var ActionControl = {
       direction: intention ? intention : currentTile.direction,
       type: 'I'
     };
+    checkTile.type = intention == 'c' ? _this.cycleType('I') : checkTile.type;
+    checkTile.direction = intention == 'c' ? _this.defaultDirection(checkTile) : checkTile.direction;
     var loopLimit = currentTile.type;
     var directionCounter = 0;
     var changedTile = false;
@@ -1504,12 +1507,12 @@ var ActionControl = {
 
     return new Promise(function (resolve, reject) {
       console.log('ACPp: ', intention);
-      if (!intention) {
+      if (!intention || !(intention in ['U', 'R', 'D', 'L'])) {
 
         var acceptableTile = function acceptableTile(tileTry) {
           return new Promise(function (iresolve, ireject) {
             console.log('ACP: Look up exit');
-            console.log('');
+            console.log(tileTry);
             if (_this.lookupExit(tileTry.direction, tileTry, 'place')) {
               console.log('ACP: Found tile option');
               if (_this.lookupPlacingConnections(tileTry.direction, tileTry, fieldMatrix)) {
@@ -1612,6 +1615,7 @@ var ActionControl = {
   },
 
   cycleType: function cycleType(type) {
+    console.log('Cycling tile type');
     var returner = type;
     switch (type) {
       case 'I':
@@ -1640,6 +1644,14 @@ var ActionControl = {
         }
     }
     return returner;
+  },
+
+  defaultDirection: function defaultDirection(origin, tile) {
+
+    return new Promise(function (resolve, reject) {
+      var a;
+      // By type verify direction is allowed from origin
+    });
   }
 };
 
@@ -1844,33 +1856,40 @@ var DirectionByTile = {
   */
 
   checkL: function checkL(tile, intent) {
+    console.log('CL');
     return tile.direction == intent || tile.origin == intent;
   },
 
   checkT: function checkT(tile, intent) {
+    console.log('CT');
     return tile.direction == intent ? true : _TileMath2.default.getNumber(tile.direction) == _TileMath2.default.minus(dt[intent], 1) ? true : _TileMath2.default.getNumber(tile.direction) == _TileMath2.default.plus(dt[intent], 1) ? true : tile.origin == intent ? true : false;
   },
 
   checkX: function checkX(tile, intent) {
+    console.log('CX');
     return true;
   },
 
   placeI: function placeI(tile, intent) {
+    console.log('PI');
     var returner = tile.direction == intent ? true : false;
     return returner;
   },
 
   placeL: function placeL(tile, intent) {
+    console.log('PL');
     var dt = _TileMath2.default.directionToNumber;
     return intent == _TileMath2.default.minus(dt[tile.origin], 1) || intent == _TileMath2.default.plus(dt[tile.origin], 1);
   },
 
   placeT: function placeT(tile, intent) {
+    console.log('PT');
     var dt = _TileMath2.default.directionToNumber;
     return tile.origin == _TileMath2.default.plus(dt[intent], 2) ? false : dt[tile.origin] == _TileMath2.default.minus(dt[intent], 1) ? true : dt[tile.origin] == _TileMath2.default.plus(dt[intent], 1) ? true : false;
   },
 
   placeX: function placeX(tile, intent) {
+    console.log('PX');
     return intent != tile.origin;
   }
 };

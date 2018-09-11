@@ -151,7 +151,7 @@ const StateManager = {
             console.log('Checking non-arrow actions');
             // . e b s
             returner = actionIntention == 'e' ? _this.initiatePlace() :
-            actionIntention == 's' ? _this.changePlacer() :
+            actionIntention == 's' ? _this.changePlacer('c') :
             actionIntention == 'b' ? _this.initiateDelete() :
             actionIntention == 't' ? _this.changeMode() : false;
           }
@@ -383,7 +383,7 @@ const StateManager = {
       if (modeWasSet == 0) {
         if (getMode() == 'place') {
           console.log('Changing mode to place');
-          if (!getPlaced) {
+          if (!getPlaced()) {
             _this.changePlacer(false);
           } else if (getCurrentTile() != 'e') {
             setMode('move');

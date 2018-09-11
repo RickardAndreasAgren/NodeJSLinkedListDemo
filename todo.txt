@@ -1,18 +1,8 @@
 
-
-Move to existing tile
-  call backend to confirm
-
-Create tile
-  call backend to confirm
+fix tile changing
 
 Delete tile
   call backend to start chain delete
-
-Make placer
-  API call
-    update on success
-    or error report
 
 change mode to place
   : use origin, default direction to opposite
