@@ -63,6 +63,15 @@ class LinkedObject {
     return null;
   }
 
+  setNext(obj) {
+    this.nextObj = obj;
+    return 0;
+  }
+
+  getNext(unused) {
+    return this.nextObj ? this.nextObj : null;
+  }
+
   deleteMe(mark) {
     if (mark && !this.markedForDeletion) {
       this.markedForDeletion = 1;

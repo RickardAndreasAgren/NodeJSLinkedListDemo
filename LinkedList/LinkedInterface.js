@@ -47,7 +47,7 @@ const LinkedInterface = {
 
   create: function(direction, type, entrance) {
     var returner = null;
-    var createResult = this.listState.addLink(direction);
+    var createResult = this.listState.addLink(direction,type,entrance);
     if (createResult == 0) {
       returner = {action: 'Success'};
     } else {

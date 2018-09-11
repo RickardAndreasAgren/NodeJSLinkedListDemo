@@ -404,10 +404,25 @@ var InfoContainer = function (_React$Component) {
   function InfoContainer(props) {
     _classCallCheck(this, InfoContainer);
 
-    return _possibleConstructorReturn(this, (InfoContainer.__proto__ || Object.getPrototypeOf(InfoContainer)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (InfoContainer.__proto__ || Object.getPrototypeOf(InfoContainer)).call(this, props));
+
+    _this.handlePasswordInput = _this.handlePasswordInput.bind(_this);
+
+    _this.setPasswordInputRef = function (element) {
+      _this.pwiRef = element;
+    };
+    return _this;
   }
 
   _createClass(InfoContainer, [{
+    key: 'handlePasswordInput',
+    value: function handlePasswordInput(e) {
+      console.log('test');
+      console.log(e.target.value);
+      e.preventDefault();
+      return this.props.handlePasswordInput(e.target.value);
+    }
+  }, {
     key: 'render',
     value: function render() {
       return _react2.default.createElement(
@@ -438,6 +453,19 @@ var InfoContainer = function (_React$Component) {
           'p',
           null,
           'Backspace: Start delete from current point'
+        ),
+        _react2.default.createElement('input', { type: 'text', placeholder: 'Enter password',
+          ref: this.setPasswordInputRef, value: this.props.password,
+          onChange: this.handlePasswordInput }),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Press tab to type password.'
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Click on field to enable actions.'
         )
       );
     }
@@ -487,37 +515,37 @@ var LinkApp = function (_React$Component) {
   function LinkApp(props) {
     _classCallCheck(this, LinkApp);
 
-    var _this = _possibleConstructorReturn(this, (LinkApp.__proto__ || Object.getPrototypeOf(LinkApp)).call(this, props));
+    var _this2 = _possibleConstructorReturn(this, (LinkApp.__proto__ || Object.getPrototypeOf(LinkApp)).call(this, props));
 
-    _this.keyInputRef = null;
-    _this.needInit = true;
+    _this2.keyInputRef = null;
+    _this2.needInit = true;
 
-    _this.fireUpdate = _this.fireUpdate.bind(_this);
-    _this.componentWillUpdate = _this.componentWillUpdate.bind(_this);
-    _this.componentDidMount = _this.componentDidMount.bind(_this);
-    _this.componentDidUpdate = _this.componentDidUpdate.bind(_this);
-    //This.sendMouseToInput = this.sendMouseToInput.bind(this);
-    _this.handleKeyInput = _this.handleKeyInput.bind(_this);
+    _this2.fireUpdate = _this2.fireUpdate.bind(_this2);
+    _this2.componentWillUpdate = _this2.componentWillUpdate.bind(_this2);
+    _this2.componentDidMount = _this2.componentDidMount.bind(_this2);
+    _this2.componentDidUpdate = _this2.componentDidUpdate.bind(_this2);
+    _this2.handleKeyInput = _this2.handleKeyInput.bind(_this2);
+    _this2.handlePasswordInput = _this2.handlePasswordInput.bind(_this2);
 
-    _this.state = _StateManager2.default.getState();
+    _this2.state = _StateManager2.default.getState();
 
-    _this.setKeyInputRef = function (element) {
-      _this.keyInputRef = element;
+    _this2.setKeyInputRef = function (element) {
+      _this2.keyInputRef = element;
     };
 
-    _this.focusKeyInputRef = function () {
-      if (_this.state.focusOn && _this.keyInputRef) {
+    _this2.focusKeyInputRef = function () {
+      if (_this2.state.focusOn && _this2.keyInputRef) {
 
-        _this.keyInputRef.focus();
+        _this2.keyInputRef.focus();
         _StateManager2.default.setFocus(false);
       }
     };
 
-    _this.sendMouseToInput = function () {
+    _this2.sendMouseToInput = function () {
       _StateManager2.default.setFocus(true);
-      _this.setState(_StateManager2.default.getState());
+      _this2.setState(_StateManager2.default.getState());
     };
-    return _this;
+    return _this2;
   }
 
   _createClass(LinkApp, [{
@@ -551,7 +579,7 @@ var LinkApp = function (_React$Component) {
   }, {
     key: 'handleKeyInput',
     value: function handleKeyInput(e) {
-      var _this2 = this;
+      var _this3 = this;
 
       // E.preventDefault();
       console.log('YA');
@@ -559,9 +587,21 @@ var LinkApp = function (_React$Component) {
       _StateManager2.default.attemptAction({ key: e.key, code: e.code }, function () {
         _StateManager2.default.toggleForceUpdate(true);
         var newState = _StateManager2.default.getState();
-        _this2.setState(newState);
+        _this3.setState(newState);
       });
       return 0;
+    }
+  }, {
+    key: 'handlePasswordInput',
+    value: function handlePasswordInput(val) {
+      console.log(val);
+      var _this = this;
+      return new Promise(function (resolve, reject) {
+        resolve(_StateManager2.default.setPassword(val));
+      }).then(function () {
+        console.log('Firing pw update');
+        return _this.fireUpdate();
+      });
     }
 
     // Pass handle function for typing pw
@@ -622,7 +662,9 @@ var LinkApp = function (_React$Component) {
           } }),
         this.state.info && _react2.default.createElement(_InfoContainer2.default, { password: this.state.info.pw,
           error: this.state.info.error,
-          mode: this.state.info.mode })
+          mode: this.state.info.mode,
+          fireUpdate: this.fireUpdate,
+          handlePasswordInput: this.handlePasswordInput })
       );
     }
   }]);
@@ -750,10 +792,14 @@ var StateManager = {
     return getAppState();
   },
 
+  setPassword: function setPassword(val) {
+    _setPassword(val);
+  },
+
   init: function init(fireUpdate) {
     return new Promise(function (resolve, reject) {
       console.log('Initializing server state');
-      resolve(_ClientAPIHelper2.default.init());
+      resolve(_ClientAPIHelper2.default.init({ password: getPassword() }));
     }).then(function (serverInit) {
       console.log(serverInit);
       var returner = null;
@@ -825,6 +871,7 @@ var StateManager = {
             // . e b s
             returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer() : actionIntention == 'b' ? _this.initiateDelete() : actionIntention == 't' ? _this.changeMode() : false;
           }
+          console.log('Action results');
           console.log(returner);
           return returner;
         }, function (e) {
@@ -854,6 +901,8 @@ var StateManager = {
             console.log('Move to existing tile');
             // Update current info to confirm move
             returner = _this2.changeSelectExist(action[1]);
+          } else {
+            returner = true;
           }
           console.log(getX());
           console.log(getY());
@@ -932,18 +981,32 @@ var StateManager = {
     console.log(intent);
     return new Promise(function (resolve, reject) {
       resolve(setMode('move'));
-    }).then(function (done) {
-      setField(getX(), getY(), {
-        direction: '0',
-        origin: '0',
-        tileType: 'e',
-        placed: false
+    }).then(function () {
+      return _ClientAPIHelper2.default.move({
+
+        password: getPassword()
       });
-      var change = directions[intent];
-      setX(change.x + getX());
-      setY(change.y + getY());
-      console.log(getX());
-      console.log(getY());
+    }).then(function (moveResult) {
+      var returner = null;
+      if (moveResult.action == 'Success') {
+        returner = true;
+        setField(getX(), getY(), {
+          direction: '0',
+          origin: '0',
+          tileType: 'e',
+          placed: false
+        });
+        var change = directions[intent];
+        setX(change.x + getX());
+        setY(change.y + getY());
+        console.log(getX());
+        console.log(getY());
+      } else if (moveResult.err) {
+        throw new Error(moveResult.err);
+      } else {
+        throw new Error('Creation failure');
+      }
+      return returner;
     }).then(function (done) {
       return getField(null, getX(), getY());
     }).then(function (movedInto) {
@@ -1012,17 +1075,40 @@ var StateManager = {
       if (modeWasSet == 0) {
         if (getMode() == 'place') {
           console.log('Changing mode to place');
-          if (getCurrentTile() != 'e') {
+          if (!getPlaced) {
+            _this.changePlacer(false);
+          } else if (getCurrentTile() != 'e') {
             setMode('move');
             returner = 1;
           } else {
-            returner = _this.changePlacer(_TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(getOrigin(), 2))));
+            var returner = new Promise(function (resolve, reject) {
+              var done = _this.changePlacer(_TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(getOrigin(), 2))));
+              resolve(done);
+            }).then(function (done) {
+              console.log('Setting placer');
+              if (done) {
+                setCurrentTile(done.type);
+                setDirection(done.direction);
+                setPlaced(false);
+                var placingTile = {
+                  direction: getDirection(),
+                  tileType: getCurrentTile(),
+                  origin: getOrigin(),
+                  placed: false
+                };
+                setField(getX(), getY(), placingTile);
+                setForceUpdate(true);
+              }
+              return done;
+            });
           }
         } else if (getMode() == 'move') {
           console.log('Changing mode to move');
-          var actualTile = getField(null, getX(), getY());
-          setDirection(actualTile.direction);
-          setCurrentTile(actualTile.tileType);
+          if (!getPlaced()) {
+            setField(getX(), getY(), deadTile);
+            setCurrentTile('e');
+            setDirection('U');
+          }
           returner = 1;
         }
       } else {
@@ -1055,9 +1141,32 @@ var StateManager = {
   },
 
   initiatePlace: function initiatePlace() {
+    var _this = this;
     console.log('Attempt to place');
-
-    return 'done';
+    return new Promise(function (resolve, reject) {
+      var createCall = _ClientAPIHelper2.default.create({
+        direction: getDirection(),
+        type: getCurrentTile(),
+        entrance: getOrigin(),
+        password: getPassword()
+      });
+      resolve(createCall);
+    }).then(function (createResult) {
+      console.log('API call yielded: ');
+      console.log(createResult);
+      var returner = null;
+      if (createResult.action == 'Success') {
+        setPlaced(true);
+        returner = true;
+      } else if (createResult.err) {
+        throw new Error(createResult.err);
+      } else {
+        throw new Error('Creation failure');
+      }
+      return returner;
+    }).then(function (createOk) {
+      return _this.changeMode();
+    });
   }
 };
 
@@ -1077,7 +1186,7 @@ function getFullTile(xy) {
   return returner;
 }
 
-function setPassword(newPassword) {
+function _setPassword(newPassword) {
   password = newPassword;
   return 0;
 }

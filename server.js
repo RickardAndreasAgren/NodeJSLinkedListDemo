@@ -30,7 +30,7 @@ app.use(function(req,res,next) {
   if (req.body.password == cts.PASSWORD) {
     next();
   } else {
-    res.status(200).json({password: 'Invalid'});
+    res.status(200).json({err: 'Invalid password'});
   }
 });
 
@@ -46,7 +46,6 @@ app.use(function(err, req, res, next) {
     }
   }
 );
-
 
 console.log('Application running on port ' + cts.PORT);
 

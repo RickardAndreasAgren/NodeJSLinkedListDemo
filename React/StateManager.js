@@ -65,10 +65,14 @@ const StateManager = {
     return getAppState();
   },
 
+  setPassword: function(val) {
+    setPassword(val);
+  },
+
   init: function(fireUpdate) {
     return new Promise((resolve,reject) => {
       console.log('Initializing server state');
-      resolve(ClientAPIHelper.init());
+      resolve(ClientAPIHelper.init({password: getPassword()}));
     })
     .then(function(serverInit) {
       console.log(serverInit);
@@ -151,6 +155,7 @@ const StateManager = {
             actionIntention == 'b' ? _this.initiateDelete() :
             actionIntention == 't' ? _this.changeMode() : false;
           }
+          console.log('Action results');
           console.log(returner);
           return returner;
         }, (e) => {console.log(e);
@@ -179,6 +184,8 @@ const StateManager = {
             console.log('Move to existing tile');
             // Update current info to confirm move
             returner = this.changeSelectExist(action[1]);
+          } else {
+            returner = true;
           }
           console.log(getX());
           console.log(getY());
@@ -268,18 +275,33 @@ const StateManager = {
     return new Promise((resolve,reject) => {
       resolve(setMode('move'));
     })
-    .then(function(done) {
-      setField(getX(),getY(),{
-        direction: '0',
-        origin: '0',
-        tileType: 'e',
-        placed: false,
+    .then(function() {
+      return ClientAPIHelper.move({
+
+        password: getPassword(),
       });
-      var change = directions[intent];
-      setX(change.x + getX());
-      setY(change.y + getY());
-      console.log(getX());
-      console.log(getY());
+    })
+    .then(function(moveResult) {
+      var returner = null;
+      if (moveResult.action == 'Success') {
+        returner = true;
+        setField(getX(),getY(),{
+          direction: '0',
+          origin: '0',
+          tileType: 'e',
+          placed: false,
+        });
+        var change = directions[intent];
+        setX(change.x + getX());
+        setY(change.y + getY());
+        console.log(getX());
+        console.log(getY());
+      } else if (moveResult.err) {
+        throw new Error(moveResult.err);
+      } else {
+        throw new Error('Creation failure');
+      }
+      return returner;
     })
     .then(function(done) {
       return getField(null, getX(), getY());
@@ -359,21 +381,44 @@ const StateManager = {
       if (modeWasSet == 0) {
         if (getMode() == 'place') {
           console.log('Changing mode to place');
-          if (getCurrentTile() != 'e') {
+          if (!getPlaced) {
+            _this.changePlacer(false);
+          } else if (getCurrentTile() != 'e') {
             setMode('move');
             returner = 1;
           } else {
-            returner = _this.changePlacer(TileMath.getDirection(
-              TileMath.plus(
-                TileMath.getNumber(getOrigin(),2)
-              )
-            ))
+            var returner = new Promise((resolve,reject) => {
+              var done = _this.changePlacer(TileMath.getDirection(
+                TileMath.plus(
+                  TileMath.getNumber(getOrigin(),2)
+                )
+              ))
+              resolve(done);
+            }).then(function(done) {
+              console.log('Setting placer')
+              if (done) {
+                setCurrentTile(done.type);
+                setDirection(done.direction);
+                setPlaced(false);
+                var placingTile = {
+                  direction: getDirection(),
+                  tileType: getCurrentTile(),
+                  origin: getOrigin(),
+                  placed: false,
+                };
+                setField(getX(),getY(),placingTile);
+                setForceUpdate(true);
+              }
+              return done;
+            });
           }
         } else if (getMode() == 'move') {
           console.log('Changing mode to move');
-          var actualTile = getField(null, getX(), getY());
-          setDirection(actualTile.direction);
-          setCurrentTile(actualTile.tileType);
+          if (!getPlaced()) {
+            setField(getX(),getY(),deadTile);
+            setCurrentTile('e');
+            setDirection('U');
+          }
           returner = 1;
         }
       } else {
@@ -408,9 +453,34 @@ const StateManager = {
   },
 
   initiatePlace: function() {
+    var _this = this;
     console.log('Attempt to place');
-
-    return 'done';
+    return new Promise((resolve,reject) => {
+      var createCall = ClientAPIHelper.create({
+        direction: getDirection(),
+        type: getCurrentTile(),
+        entrance: getOrigin(),
+        password: getPassword(),
+      });
+      resolve(createCall);
+    })
+    .then(function(createResult) {
+      console.log('API call yielded: ');
+      console.log(createResult);
+      var returner = null;
+      if (createResult.action == 'Success') {
+        setPlaced(true);
+        returner = true;
+      } else if (createResult.err) {
+        throw new Error(createResult.err);
+      } else {
+        throw new Error('Creation failure');
+      }
+      return returner;
+    })
+    .then(function(createOk) {
+      return _this.changeMode();
+    });
   },
 };
 

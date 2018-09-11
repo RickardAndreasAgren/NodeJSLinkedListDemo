@@ -21,6 +21,7 @@ module.exports = function(homedir, router, debug, linkedbackend) {
   router.post('/create', function(req,res) {
     new Promise((resolve,reject) => {
       var args = req.body;
+      console.log(args);
       resolve(linkedbackend.create(args.direction, args.type, args.entrance));
     })
     .then(function(done) {

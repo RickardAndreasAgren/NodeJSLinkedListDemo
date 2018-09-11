@@ -17,14 +17,15 @@ class LinkApp extends React.Component {
     this.componentWillUpdate = this.componentWillUpdate.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.componentDidUpdate = this.componentDidUpdate.bind(this);
-    //This.sendMouseToInput = this.sendMouseToInput.bind(this);
     this.handleKeyInput = this.handleKeyInput.bind(this);
+    this.handlePasswordInput = this.handlePasswordInput.bind(this);
 
     this.state = StateManager.getState();
 
     this.setKeyInputRef = element => {
       this.keyInputRef = element;
     }
+
 
     this.focusKeyInputRef = () => {
       if (this.state.focusOn && this.keyInputRef) {
@@ -76,6 +77,18 @@ class LinkApp extends React.Component {
     return 0;
   }
 
+  handlePasswordInput(val) {
+    console.log(val);
+    var _this = this;
+    return new Promise((resolve, reject) => {
+      resolve(StateManager.setPassword(val))
+    })
+    .then(() => {
+      console.log('Firing pw update');
+      return _this.fireUpdate();
+    });
+  }
+
   // Pass handle function for typing pw
   // FieldContainer: current pos, field state, event function
   // InfoContainer: pw, error, mode
@@ -122,7 +135,9 @@ class LinkApp extends React.Component {
         { this.state.info &&
           <InfoContainer password={this.state.info.pw}
             error={this.state.info.error}
-            mode={this.state.info.mode}/>
+            mode={this.state.info.mode}
+            fireUpdate={this.fireUpdate}
+            handlePasswordInput={this.handlePasswordInput}/>
         }
       </div>
     );

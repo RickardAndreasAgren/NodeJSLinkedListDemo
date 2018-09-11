@@ -21,7 +21,7 @@ class LinkedL extends LinkedObject {
     return this.nextObj;
   }
 
-  set next(next) {
+  setNext(next) {
     if (next.obj) {
       this.nextObj = next.obj;
     } else {

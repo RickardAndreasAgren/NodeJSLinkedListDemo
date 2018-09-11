@@ -12,7 +12,7 @@ class LinkedI extends LinkedObject {
     return this.nextObj;
   }
 
-  set next(next) {
+  setNext(next) {
     if (next.obj) {
       this.nextObj = next.obj;
     } else {
@@ -20,7 +20,6 @@ class LinkedI extends LinkedObject {
     }
     return 0;
   }
-
 };
 
 module.exports = LinkedI;

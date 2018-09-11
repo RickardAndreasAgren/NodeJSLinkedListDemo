@@ -5,10 +5,10 @@ const LinkedT = require('./LinkedT');
 const LinkedX = require('./LinkedX');
 
 const links = {
-  I: LinkedI,
-  L: LinkedL,
-  T: LinkedT,
-  X: LinkedX,
+  I: (p,v,d,e) => {return new LinkedI(p,v,d,e)},
+  L: (p,v,d,e) => {return new LinkedL(p,v,d,e)},
+  T: (p,v,d,e) => {return new LinkedT(p,v,d,e)},
+  X: (p,v,d,e) => {return new LinkedX(p,v,d,e)},
 };
 
 class LinkedList {
@@ -26,9 +26,10 @@ class LinkedList {
   }
 
   addLink(direction, type, entrance, exit) {
-    var newLink = new links[type](this, 0, direction, entrance)
-    this.activeLink.next({obj: newLink, exit: exit});
-    this.activeLink = this.activeLink.next();
+    console.log(type);
+    var newLink = links[type](this.activeLink, 0, direction, entrance)
+    this.activeLink.setNext = {obj: newLink, exit: exit};
+    this.activeLink = this.activeLink.getNext(nextEntrance);
   }
 
   traverseLink(direction) {

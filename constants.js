@@ -1,5 +1,5 @@
 
-var constants = function () {
+var constants = function() {
   return {
     PORT: '7070',
     PASSWORD: 'bird',

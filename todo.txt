@@ -1,4 +1,14 @@
 
+
+Move to existing tile
+  call backend to confirm
+
+Create tile
+  call backend to confirm
+
+Delete tile
+  call backend to start chain delete
+
 Make placer
   API call
     update on success

@@ -37,7 +37,12 @@ class LinkedT extends LinkedObject {
     }
   }
 
-  set next(next) {
+  getNext(nextEntrance) {
+    return nextObj[this.nextDir.indexOf(TileMath.getDirection(TileMath.plus(
+      TileMath.getNumber(nextEntrance),2)))];
+  }
+
+  setNext(next) {
     if (next.obj) {
       if (typeof next.exit == string) {
         for (var i = 0; i < 2; i++) {
