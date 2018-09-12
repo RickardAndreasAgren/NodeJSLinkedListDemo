@@ -19,6 +19,7 @@ class LinkedX extends LinkedObject {
     this.deleted = 0;
     this.move = this.move.bind(this);
     this.setNext = this.setNext.bind(this);
+    this.printMe = this.printMe.bind(this);
 
 
   }
@@ -26,11 +27,14 @@ class LinkedX extends LinkedObject {
   // Count links clockwise
 
   move(direction) {
-    for (var dir in this.nextDir) {
-      if (this.nextDir[dir] == direction) {
-        return this.nextObj[dir] ? this.nextObj[dir] : false;
-      }
+    console.log('X moving.');
+    var returner = null;
+    if (direction == this.entrance) {
+      returner = this.prevObj;
+    } else {
+      returner = this.nextObj[this.nextDir.indexOf(direction)];
     }
+    return returner;
   }
 
   getNext(nextEntrance) {
@@ -39,16 +43,13 @@ class LinkedX extends LinkedObject {
   }
 
   setNext(next) {
+    console.log('Setting next in X');
+    console.log(this.nextDir);
+    console.log(this.nextDir.indexOf(next.exit));
+    var exit = TileMath.getDirection(TileMath.plus(
+      TileMath.getNumber(next.exit),2));
     if (next.obj) {
-      if (typeof next.exit == string) {
-        for (var i = 0; i < 3; i++) {
-          if (this.nextDir[i] == next.exit) {
-            this.nextObj[i] = next.exit;
-          }
-        }
-      } else {
-        this.nextObj[next.exit] = next.obj;
-      }
+      this.nextObj[this.nextDir.indexOf(exit)] = next.obj;
     } else {
       this.nextObj = next;
     }

@@ -74,8 +74,8 @@ const TileConstants = {
     return {
       display: 'dr',
       t1: '',
-      t2: 'd',
-      t3: 'r',
+      t2: prefix + 'd',
+      t3: prefix + 'r',
       t4: prefix + 'l ' + prefix + 'u',
     }
   },
@@ -86,8 +86,8 @@ const TileConstants = {
       display: 'tu',
       t1: prefix + 'd ' + prefix + 'r',
       t2: prefix + 'd ' + prefix + 'l',
-      t3: 'u',
-      t4: 'u',
+      t3: prefix + 'u',
+      t4: prefix + 'u',
     }
   },
 
@@ -95,8 +95,8 @@ const TileConstants = {
     var prefix = placed ? 'q' : 'p';
     return {
       display: 'td',
-      t1: 'd',
-      t2: 'd',
+      t1: prefix + 'd',
+      t2: prefix + 'd',
       t3: prefix + 'u ' + prefix + 'r',
       t4: prefix + 'u ' + prefix + 'l',
     }
@@ -107,9 +107,9 @@ const TileConstants = {
     return {
       display: 'tl',
       t1: prefix + 'd ' + prefix + 'r',
-      t2: 'l',
+      t2: prefix + 'l',
       t3: prefix + 'u ' + prefix + 'r',
-      t4: 'l',
+      t4: prefix + 'l',
     }
   },
 
@@ -117,10 +117,10 @@ const TileConstants = {
     var prefix = placed ? 'q' : 'p';
     return {
       display: 'tr',
-      t1: 'l',
-      t2: prefix + 'r ' + prefix + 'd',
-      t3: 'l',
-      t4: prefix + 'r ' + prefix + 'u',
+      t1: prefix + 'r',
+      t2: prefix + 'l ' + prefix + 'd',
+      t3: prefix + 'r',
+      t4: prefix + 'l ' + prefix + 'u',
     }
   },
 

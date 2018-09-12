@@ -28,13 +28,14 @@ class LinkedList {
     return false;
   }
 
-  addLink(direction, type, entrance, exit) {
+  addLink(direction, type, entrance) {
     console.log('Adding Link');
     console.log(type);
     console.log(this.activeLink.direction);
-    var newLink = new linkoptions[type](this.activeLink, 0, direction, entrance);;
+    console.log(entrance);
+    var newLink = new linkoptions[type](this.activeLink, 0, direction, entrance);
     newLink.prev = this.activeLink;
-    this.activeLink.setNext({obj: newLink, exit: exit});
+    this.activeLink.setNext({obj: newLink, exit: entrance});
     this.activeLink = newLink;
     newLink.printMe();
     return 0;
@@ -42,7 +43,7 @@ class LinkedList {
 
   traverseLink(direction) {
     console.log('Traversing Link');
-    console.log(this.activeLink.direction);
+    console.log(direction);
     var movedTo = this.activeLink.move(direction);
     this.activeLink = movedTo;
     this.activeLink.printMe();

@@ -48,8 +48,9 @@ const ActionControl = {
   lookupExit: function(intent, currentTile, lookupType) {
     var dbt = lookupType + currentTile.type;
     console.log('Looking up exit. ', dbt);
-    var returner = intent == currentTile.direction ? true :
-      (DirectionByTile[dbt])(currentTile, intent) ? true : false;
+    console.log('with intent ', intent);
+    var returner = intent == currentTile.direction && lookupType != 'valid'
+      ? true : (DirectionByTile[dbt])(currentTile, intent) ? true : false;
     console.log('Exit is ');
     console.log(returner);
     return returner;
@@ -71,7 +72,10 @@ const ActionControl = {
         var entry = TileMath.getDirection(
           TileMath.plus(
             TileMath.getNumber(intent), 2));
-        var dbt = 'check' + currentTile.type;
+        var dbt = 'check' + tile.tileType;
+
+        console.log('Checking ',DirectionByTile[dbt](tile, entry), ' with ',
+        dbt);
         if (DirectionByTile[dbt](tile, entry)) {
           returner = 'E' + intent;
         } else {
@@ -89,6 +93,7 @@ const ActionControl = {
     // todo DEBUG
     console.log('Placing called with intent: ');
     console.log(intention);
+    console.log('with tile ', currentTile);
     var _this = this;
     var checkTile = currentTile.type != 'e' ? currentTile :
       {
@@ -98,7 +103,8 @@ const ActionControl = {
         direction: (intention ? intention : currentTile.direction),
         type: 'I',
       };
-    checkTile.type = intention == 'c' ? _this.cycleType('I') : checkTile.type;
+    checkTile.type = intention == 'c' ?
+      _this.cycleType(checkTile.type) : checkTile.type;
     checkTile.direction = intention == 'c' ?
       _this.defaultDirection(checkTile) :
       checkTile.direction;
@@ -154,6 +160,11 @@ const ActionControl = {
               console.log('ACP: rotate4');
               iresolve(tileTry);
             }
+          })
+          .catch(function(err) {
+            console.log('Error while looping for options');
+            console.log(err);
+            return false;
           });
         }
 
@@ -221,7 +232,7 @@ const ActionControl = {
     var directions = ReactConstants.directions;
     var xC = currentTile.x + directions[TileMath.getDirection(num)].x;
     var yC = currentTile.y + directions[TileMath.getDirection(num)].y;
-    var tileInfo = matrix[xC][yC];
+    var tileInfo = matrix[xC][yC] ? matrix[xC][yC] : {tileType: 'e'};
     var testIntent = TileMath.getDirection(TileMath.minus(num,2));
     var tileToTest = {
       x: xC,
@@ -263,12 +274,23 @@ const ActionControl = {
     return returner;
   },
 
-  defaultDirection: function(origin, tile) {
+  defaultDirection: function(tile) {
+    var _this = this;
+    console.log('Checking direction validity of ', tile);
+    var returner = null;
+    if (_this.lookupExit(tile.direction, tile, 'valid')) {
+      returner = tile.direction;
+    } else {
+      returner = _this.setStartingDirection(tile);
+    }
+    console.log('Changing direction to ', returner);
+    return returner;
+  },
 
-    return new Promise((resolve,reject) => {
-      var a;
-      // By type verify direction is allowed from origin
-    })
+  setStartingDirection: function(tile) {
+    var dbt = 'default' + tile.type;
+    console.log('Looking up default. ', dbt);
+    return (DirectionByTile[dbt])(tile);
   },
 }
 

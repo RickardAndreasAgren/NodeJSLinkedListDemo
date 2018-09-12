@@ -869,7 +869,7 @@ var StateManager = {
           } else {
             console.log('Checking non-arrow actions');
             // . e b s
-            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.changePlacer('c') : actionIntention == 'b' ? _this.initiateDelete() : actionIntention == 't' ? _this.changeMode() : false;
+            returner = actionIntention == 'e' ? _this.initiatePlace() : actionIntention == 's' ? _this.setChangedPlacer('c') : actionIntention == 'b' ? _this.initiateDelete() : actionIntention == 't' ? _this.changeMode() : false;
           }
           console.log('Action results');
           console.log(returner);
@@ -919,6 +919,8 @@ var StateManager = {
         }).catch(function (e) {
           console.log('Resolving action failed');
           console.log(e);
+          setLock(false);
+          callback();
         });
       }
     }
@@ -982,10 +984,17 @@ var StateManager = {
     return new Promise(function (resolve, reject) {
       resolve(setMode('move'));
     }).then(function () {
-      return _ClientAPIHelper2.default.move({
-        direction: intent,
-        password: getPassword()
-      });
+      var returner = null;
+      var actualTile = getField(null, getX(), getY());
+      if (actualTile.placed) {
+        returner = _ClientAPIHelper2.default.move({
+          direction: intent,
+          password: getPassword()
+        });
+      } else {
+        returner = { action: 'Success' };
+      }
+      return returner;
     }).then(function (moveResult) {
       var returner = null;
       if (moveResult.action == 'Success') {
@@ -1037,8 +1046,51 @@ var StateManager = {
 
   changePlacer: function changePlacer(intent) {
     console.log('Change placement tile');
+    var _this = this;
     var hasIntent = intent ? intent : false;
-    return _ActionControl2.default['place'](hasIntent, getFullTile(), getField());
+    return new Promise(function (resolve, reject) {
+      resolve(_ActionControl2.default['place'](hasIntent, getFullTile(), getField()));
+    }).then(function (acResult) {
+      var returner = null;
+      console.log('Handling change placement result');
+      console.log(acResult);
+      if (typeof acResult == 'string') {
+        returner = acResult;
+      } else if (acResult.type) {
+        returner = acResult;
+      } else {
+        returner = true;
+      }
+      console.log(returner);
+      return returner;
+    });
+  },
+
+  setChangedPlacer: function setChangedPlacer(intent) {
+    var _this = this;
+    return new Promise(function (resolve, reject) {
+      resolve(_this.changePlacer(intent));
+    }).then(function (done) {
+      console.log('Set these');
+      console.log(done);
+      if (done) {
+        setCurrentTile(done.type);
+        setDirection(done.direction);
+        setPlaced(false);
+        var placingTile = {
+          direction: getDirection(),
+          tileType: getCurrentTile(),
+          origin: getOrigin(),
+          placed: false
+        };
+        setField(getX(), getY(), placingTile);
+        setForceUpdate(true);
+      }
+      return done;
+    }).catch(function (err) {
+      console.log('Failed to change tile');
+      console.log(err);
+    });
   },
 
   changePlaceDirection: function changePlaceDirection(intent) {
@@ -1146,13 +1198,24 @@ var StateManager = {
     var _this = this;
     console.log('Attempt to place');
     return new Promise(function (resolve, reject) {
-      var createCall = _ClientAPIHelper2.default.create({
+      if (getMode() == 'place') {
+        resolve(true);
+      } else {
+        throw new Error('In move mode');
+      }
+    }).then(function () {
+      return _ClientAPIHelper2.default.create({
         direction: getDirection(),
         type: getCurrentTile(),
         entrance: getOrigin(),
         password: getPassword()
       });
-      resolve(createCall);
+    }).then(function (createCall) {
+      if (createCall.err) {
+        throw new Error(createCall.err);
+      } else {
+        return createCall;
+      }
     }).then(function (createResult) {
       console.log('API call yielded: ');
       console.log(createResult);
@@ -1183,6 +1246,9 @@ var StateManager = {
         throw new Error(modeChanged.err);
       }
       return returner;
+    }).catch(function (err) {
+      console.log(err);
+      return true;
     });
   }
 };
@@ -1445,7 +1511,8 @@ var ActionControl = {
   lookupExit: function lookupExit(intent, currentTile, lookupType) {
     var dbt = lookupType + currentTile.type;
     console.log('Looking up exit. ', dbt);
-    var returner = intent == currentTile.direction ? true : _DirectionByTile2.default[dbt](currentTile, intent) ? true : false;
+    console.log('with intent ', intent);
+    var returner = intent == currentTile.direction && lookupType != 'valid' ? true : _DirectionByTile2.default[dbt](currentTile, intent) ? true : false;
     console.log('Exit is ');
     console.log(returner);
     return returner;
@@ -1464,7 +1531,9 @@ var ActionControl = {
         returner = intent;
       } else {
         var entry = _TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(intent), 2));
-        var dbt = 'check' + currentTile.type;
+        var dbt = 'check' + tile.tileType;
+
+        console.log('Checking ', _DirectionByTile2.default[dbt](tile, entry), ' with ', dbt);
         if (_DirectionByTile2.default[dbt](tile, entry)) {
           returner = 'E' + intent;
         } else {
@@ -1482,6 +1551,7 @@ var ActionControl = {
     // todo DEBUG
     console.log('Placing called with intent: ');
     console.log(intention);
+    console.log('with tile ', currentTile);
     var _this = this;
     var checkTile = currentTile.type != 'e' ? currentTile : {
       x: currentTile.x,
@@ -1490,7 +1560,7 @@ var ActionControl = {
       direction: intention ? intention : currentTile.direction,
       type: 'I'
     };
-    checkTile.type = intention == 'c' ? _this.cycleType('I') : checkTile.type;
+    checkTile.type = intention == 'c' ? _this.cycleType(checkTile.type) : checkTile.type;
     checkTile.direction = intention == 'c' ? _this.defaultDirection(checkTile) : checkTile.direction;
     var loopLimit = currentTile.type;
     var directionCounter = 0;
@@ -1538,6 +1608,10 @@ var ActionControl = {
               console.log('ACP: rotate4');
               iresolve(tileTry);
             }
+          }).catch(function (err) {
+            console.log('Error while looping for options');
+            console.log(err);
+            return false;
           });
         };
 
@@ -1600,7 +1674,7 @@ var ActionControl = {
     var directions = _ReactConstants2.default.directions;
     var xC = currentTile.x + directions[_TileMath2.default.getDirection(num)].x;
     var yC = currentTile.y + directions[_TileMath2.default.getDirection(num)].y;
-    var tileInfo = matrix[xC][yC];
+    var tileInfo = matrix[xC][yC] ? matrix[xC][yC] : { tileType: 'e' };
     var testIntent = _TileMath2.default.getDirection(_TileMath2.default.minus(num, 2));
     var tileToTest = {
       x: xC,
@@ -1646,12 +1720,23 @@ var ActionControl = {
     return returner;
   },
 
-  defaultDirection: function defaultDirection(origin, tile) {
+  defaultDirection: function defaultDirection(tile) {
+    var _this = this;
+    console.log('Checking direction validity of ', tile);
+    var returner = null;
+    if (_this.lookupExit(tile.direction, tile, 'valid')) {
+      returner = tile.direction;
+    } else {
+      returner = _this.setStartingDirection(tile);
+    }
+    console.log('Changing direction to ', returner);
+    return returner;
+  },
 
-    return new Promise(function (resolve, reject) {
-      var a;
-      // By type verify direction is allowed from origin
-    });
+  setStartingDirection: function setStartingDirection(tile) {
+    var dbt = 'default' + tile.type;
+    console.log('Looking up default. ', dbt);
+    return _DirectionByTile2.default[dbt](tile);
   }
 };
 
@@ -1862,6 +1947,7 @@ var DirectionByTile = {
 
   checkT: function checkT(tile, intent) {
     console.log('CT');
+    var dt = _TileMath2.default.directionToNumber;
     return tile.direction == intent ? true : _TileMath2.default.getNumber(tile.direction) == _TileMath2.default.minus(dt[intent], 1) ? true : _TileMath2.default.getNumber(tile.direction) == _TileMath2.default.plus(dt[intent], 1) ? true : tile.origin == intent ? true : false;
   },
 
@@ -1872,12 +1958,13 @@ var DirectionByTile = {
 
   placeI: function placeI(tile, intent) {
     console.log('PI');
-    var returner = tile.direction == intent ? true : false;
-    return returner;
+    return returner = tile.direction == intent ? true : false;
   },
 
   placeL: function placeL(tile, intent) {
     console.log('PL');
+    console.log(tile);
+    console.log(intent);
     var dt = _TileMath2.default.directionToNumber;
     return intent == _TileMath2.default.minus(dt[tile.origin], 1) || intent == _TileMath2.default.plus(dt[tile.origin], 1);
   },
@@ -1885,12 +1972,46 @@ var DirectionByTile = {
   placeT: function placeT(tile, intent) {
     console.log('PT');
     var dt = _TileMath2.default.directionToNumber;
-    return tile.origin == _TileMath2.default.plus(dt[intent], 2) ? false : dt[tile.origin] == _TileMath2.default.minus(dt[intent], 1) ? true : dt[tile.origin] == _TileMath2.default.plus(dt[intent], 1) ? true : false;
+    return dt[tile.origin] == _TileMath2.default.plus(dt[intent], 2) ? false : dt[tile.origin] == _TileMath2.default.minus(dt[intent], 1) ? true : dt[tile.origin] == _TileMath2.default.plus(dt[intent], 1) ? true : false;
   },
 
   placeX: function placeX(tile, intent) {
     console.log('PX');
     return intent != tile.origin;
+  },
+
+  validI: function validI(tile) {
+    return tile.direction == _TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(tile.origin), 2));
+  },
+
+  validL: function validL(tile) {
+    var dt = _TileMath2.default.directionToNumber;
+    return tile.direction == _TileMath2.default.minus(dt[tile.origin], 1) || tile.direction == _TileMath2.default.plus(dt[tile.origin], 1);
+  },
+
+  validT: function validT(tile) {
+    var dt = _TileMath2.default.directionToNumber;
+    return dt[tile.origin] == _TileMath2.default.plus(dt[tile.direction], 2) ? false : dt[tile.origin] == _TileMath2.default.minus(dt[tile.direction], 1) ? true : dt[tile.origin] == _TileMath2.default.plus(dt[tile.direction], 1) ? true : false;
+  },
+
+  validX: function validX(tile) {
+    return true;
+  },
+
+  defaultI: function defaultI(tile) {
+    return _TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(tile.origin), 2));
+  },
+
+  defaultL: function defaultL(tile) {
+    return _TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(tile.origin), 1));
+  },
+
+  defaultT: function defaultT(tile) {
+    return tile.origin;
+  },
+
+  defaultX: function defaultX(tile) {
+    return _TileMath2.default.getDirection(_TileMath2.default.plus(_TileMath2.default.getNumber(tile.origin), 2));
   }
 };
 
@@ -2017,8 +2138,8 @@ var TileConstants = {
     return {
       display: 'dr',
       t1: '',
-      t2: 'd',
-      t3: 'r',
+      t2: prefix + 'd',
+      t3: prefix + 'r',
       t4: prefix + 'l ' + prefix + 'u'
     };
   },
@@ -2029,8 +2150,8 @@ var TileConstants = {
       display: 'tu',
       t1: prefix + 'd ' + prefix + 'r',
       t2: prefix + 'd ' + prefix + 'l',
-      t3: 'u',
-      t4: 'u'
+      t3: prefix + 'u',
+      t4: prefix + 'u'
     };
   },
 
@@ -2038,8 +2159,8 @@ var TileConstants = {
     var prefix = placed ? 'q' : 'p';
     return {
       display: 'td',
-      t1: 'd',
-      t2: 'd',
+      t1: prefix + 'd',
+      t2: prefix + 'd',
       t3: prefix + 'u ' + prefix + 'r',
       t4: prefix + 'u ' + prefix + 'l'
     };
@@ -2050,9 +2171,9 @@ var TileConstants = {
     return {
       display: 'tl',
       t1: prefix + 'd ' + prefix + 'r',
-      t2: 'l',
+      t2: prefix + 'l',
       t3: prefix + 'u ' + prefix + 'r',
-      t4: 'l'
+      t4: prefix + 'l'
     };
   },
 
@@ -2060,10 +2181,10 @@ var TileConstants = {
     var prefix = placed ? 'q' : 'p';
     return {
       display: 'tr',
-      t1: 'l',
-      t2: prefix + 'r ' + prefix + 'd',
-      t3: 'l',
-      t4: prefix + 'r ' + prefix + 'u'
+      t1: prefix + 'r',
+      t2: prefix + 'l ' + prefix + 'd',
+      t3: prefix + 'r',
+      t4: prefix + 'l ' + prefix + 'u'
     };
   },
 
@@ -2252,7 +2373,7 @@ var TranslatePropsToTile = {
       4: 'tcrossleft'
     };
     var on = _TileMath2.default.getNumber(origin);
-    var dn = Tilemath.getNumber(origin);
+    var dn = _TileMath2.default.getNumber(direction);
 
     if (on == dn) {
       returner = options[on];

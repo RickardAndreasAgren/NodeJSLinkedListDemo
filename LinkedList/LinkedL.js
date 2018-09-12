@@ -18,6 +18,7 @@ class LinkedL extends LinkedObject {
 
     this.move = this.move.bind(this);
     this.setNext = this.setNext.bind(this);
+    this.printMe = this.printMe.bind(this);
 
 
   }

@@ -15,18 +15,19 @@ class LinkedT extends LinkedObject {
       var l = TileMath.getDirection(TileMath.plus(e,1));
       this.nextDir = [r,l];
     } else if (d == TileMath.plus(e,1)) {
-      var a = TileMath.getDirection(TileMath.minus(e,2));
-      var r = TileMath.getDirection(TileMath.minus(e,1));
-      this.nextDir = [a,r];
-    } else if (d == TileMath.minus(e,1)) {
-      var l = TileMath.getDirection(TileMath.plus(e,1));
       var a = TileMath.getDirection(TileMath.plus(e,2));
-      this.nextDir = [l,a]
+      var l = TileMath.getDirection(TileMath.plus(e,1));
+      this.nextDir = [l,a];
+    } else if (d == TileMath.minus(e,1)) {
+      var r = TileMath.getDirection(TileMath.minus(e,1));
+      var a = TileMath.getDirection(TileMath.minus(e,2));
+      this.nextDir = [a,r]
     }
 
     this.deleted = 0;
     this.move = this.move.bind(this);
     this.setNext = this.setNext.bind(this);
+    this.printMe = this.printMe.bind(this);
 
 
   }
@@ -34,11 +35,19 @@ class LinkedT extends LinkedObject {
   // Count links clockwise
 
   move(direction) {
-    for (var dir in this.nextDir) {
-      if (this.nextDir[dir] == direction) {
-        return this.nextObj[dir] ? this.nextObj[dir] : false;
-      }
+    console.log('T moving.');
+    var returner = null;
+    if (direction == this.entrance) {
+      returner = this.prevObj;
+    } else {
+      returner = this.nextObj[this.nextDir.indexOf(direction)];
     }
+    console.log(direction);
+    console.log(this.nextDir.indexOf(direction))
+    console.log(this.nextDir);
+    console.log(this.nextObj);
+    console.log(returner);
+    return returner;
   }
 
   getNext(nextEntrance) {
@@ -47,16 +56,14 @@ class LinkedT extends LinkedObject {
   }
 
   setNext(next) {
+    console.log('Setting next in T');
+    console.log(this.nextDir);
+    console.log(next);
+    var exit = TileMath.getDirection(TileMath.plus(
+      TileMath.getNumber(next.exit),2));
+    console.log(this.nextDir.indexOf(exit));
     if (next.obj) {
-      if (typeof next.exit == string) {
-        for (var i = 0; i < 2; i++) {
-          if (this.nextDir[i] == next.exit) {
-            this.nextObj[i] = next.exit;
-          }
-        }
-      } else {
-        this.nextObj[next.exit] = next.obj;
-      }
+      this.nextObj[this.nextDir.indexOf(exit)] = next.obj;
     } else {
       this.nextObj = next;
     }
@@ -101,6 +108,7 @@ class LinkedT extends LinkedObject {
     }
     return returner;
   }
+
 
 };
 

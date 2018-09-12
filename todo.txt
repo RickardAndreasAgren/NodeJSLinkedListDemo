@@ -1,5 +1,7 @@
 
-fix tile changing
+
+Implement ID to be able to
+  connect links from outside
 
 Delete tile
   call backend to start chain delete

@@ -85,7 +85,7 @@ const TranslatePropsToTile = {
       4: 'tcrossleft',
     };
     var on = TileMath.getNumber(origin);
-    var dn = Tilemath.getNumber(origin);
+    var dn = TileMath.getNumber(direction);
 
     if (on == dn) {
       returner = options[on];

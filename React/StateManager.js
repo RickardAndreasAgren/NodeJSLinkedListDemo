@@ -151,7 +151,7 @@ const StateManager = {
             console.log('Checking non-arrow actions');
             // . e b s
             returner = actionIntention == 'e' ? _this.initiatePlace() :
-            actionIntention == 's' ? _this.changePlacer('c') :
+            actionIntention == 's' ? _this.setChangedPlacer('c') :
             actionIntention == 'b' ? _this.initiateDelete() :
             actionIntention == 't' ? _this.changeMode() : false;
           }
@@ -204,6 +204,8 @@ const StateManager = {
         .catch((e) => {
           console.log('Resolving action failed');
           console.log(e);
+          setLock(false);
+          callback();
         })
       }
     }
@@ -276,10 +278,17 @@ const StateManager = {
       resolve(setMode('move'));
     })
     .then(function() {
-      return ClientAPIHelper.move({
-        direction: intent,
-        password: getPassword(),
-      });
+      var returner = null;
+      var actualTile = getField(null,getX(),getY());
+      if (actualTile.placed) {
+        returner = ClientAPIHelper.move({
+          direction: intent,
+          password: getPassword(),
+        });
+      } else {
+        returner = {action: 'Success'};
+      }
+      return returner;
     })
     .then(function(moveResult) {
       var returner = null;
@@ -336,12 +345,58 @@ const StateManager = {
 
   changePlacer: function(intent) {
     console.log('Change placement tile');
+    var _this = this;
     var hasIntent = intent ? intent : false;
-    return ActionControl['place'](
-      hasIntent,
-      getFullTile(),
-      getField(),
-    );
+    return new Promise((resolve,reject) => {
+      resolve(ActionControl['place'](
+        hasIntent,
+        getFullTile(),
+        getField(),
+      ));
+    })
+    .then(function(acResult) {
+      var returner = null;
+      console.log('Handling change placement result');
+      console.log(acResult);
+      if (typeof acResult == 'string') {
+        returner = acResult;
+      } else if (acResult.type) {
+        returner = acResult;
+      } else {
+        returner = true;
+      }
+      console.log(returner);
+      return returner;
+    })
+  },
+
+  setChangedPlacer: function(intent) {
+    var _this = this;
+    return new Promise((resolve,reject) => {
+      resolve(_this.changePlacer(intent));
+    })
+    .then(function(done) {
+      console.log('Set these');
+      console.log(done);
+      if (done) {
+        setCurrentTile(done.type);
+        setDirection(done.direction);
+        setPlaced(false);
+        var placingTile = {
+          direction: getDirection(),
+          tileType: getCurrentTile(),
+          origin: getOrigin(),
+          placed: false,
+        };
+        setField(getX(),getY(),placingTile);
+        setForceUpdate(true);
+      }
+      return done;
+    })
+    .catch(function(err) {
+      console.log('Failed to change tile');
+      console.log(err);
+    })
   },
 
   changePlaceDirection: function(intent) {
@@ -458,13 +513,26 @@ const StateManager = {
     var _this = this;
     console.log('Attempt to place');
     return new Promise((resolve,reject) => {
-      var createCall = ClientAPIHelper.create({
+      if (getMode() == 'place') {
+        resolve(true);
+      } else {
+        throw new Error('In move mode');
+      }
+    })
+    .then(function() {
+      return ClientAPIHelper.create({
         direction: getDirection(),
         type: getCurrentTile(),
         entrance: getOrigin(),
         password: getPassword(),
       });
-      resolve(createCall);
+    })
+    .then(function(createCall) {
+      if (createCall.err) {
+        throw new Error(createCall.err);
+      } else {
+        return createCall;
+      }
     })
     .then(function(createResult) {
       console.log('API call yielded: ');
@@ -498,7 +566,11 @@ const StateManager = {
         throw new Error(modeChanged.err);
       }
       return returner;
-    });
+    })
+    .catch(function(err) {
+      console.log(err);
+      return true;
+    })
   },
 };
 
