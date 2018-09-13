@@ -4,6 +4,8 @@ var LinkedL = require('./LinkedL');
 var LinkedT = require('./LinkedT');
 var LinkedX = require('./LinkedX');
 
+var LinkedSearcher = require('./LinkedSearcher');
+
 const linkoptions = {
   I: LinkedI,
   L: LinkedL,
@@ -16,6 +18,7 @@ class LinkedList {
     var starter = new LinkedI('start', 0, 'U','D');
     this.start = starter;
     this.activeLink = starter;
+    this.idCounter = 0;
 
     this.changeStart = this.changeStart.bind(this);
     this.addLink = this.addLink.bind(this);
@@ -33,7 +36,10 @@ class LinkedList {
     console.log(type);
     console.log(this.activeLink.direction);
     console.log(entrance);
-    var newLink = new linkoptions[type](this.activeLink, 0, direction, entrance);
+    var newLink = new linkoptions[type](this.activeLink,
+      this.idCounter, direction, entrance
+    );
+    this.idCounter += 1;
     newLink.prev = this.activeLink;
     this.activeLink.setNext({obj: newLink, exit: entrance});
     this.activeLink = newLink;
@@ -41,13 +47,30 @@ class LinkedList {
     return 0;
   }
 
-  traverseLink(direction) {
+  traverseLink(direction, connectTo) {
     console.log('Traversing Link');
     console.log(direction);
-    var movedTo = this.activeLink.move(direction);
-    this.activeLink = movedTo;
-    this.activeLink.printMe();
-    return 0;
+    var _this = this;
+    return new Promise((resolve,reject) => {
+      return this.activeLink.move(direction);
+    })
+    .then(function(movedTo) {
+      var returner = null;
+      if (movedTo) {
+        this.activeLink = movedTo;
+        this.activeLink.printMe();
+        returner = 0;
+      } else if (connectTo) {
+        returner = _this.connectTiles(direction, connectTo);
+      } else {
+        throw new Error('Bad move attempted.');
+      }
+      return returner;
+    })
+    .catch(function(err) {
+      console.log(err);
+      return false;
+    })
   }
 
   removeLink(startDelete) {
@@ -81,6 +104,36 @@ class LinkedList {
       returner = 1;
     }
     return returner;
+  }
+
+  connectTiles(direction, connectId) {
+    var _this = this;
+    return new Promise((resolve,reject) => {
+      resolve({
+        entry: TileMath.getDirection(TileMath.plus(
+          TileMath.getNumber(direction),2)
+        ),
+        id: connectId,
+      })
+    })
+    .then(function(connector) {
+      return _this.searchForConnector(connector);
+    })
+    .then(function(connectTo) {
+      // {obj: Object, next: DIRECTION}
+      setNext({obj: connectTo, next: direction});
+      return true;
+    })
+    .catch((err) => {
+      console.log(err);
+      console.log(err.stack);
+      throw new Error(err);
+    })
+  }
+
+  async searchForConnector(connector) {
+    var searchDirection = LinkedSearcher.find(connector,this);
+    return searchDirection;
   }
 
   printList() {

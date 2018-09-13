@@ -40,7 +40,8 @@ class LinkedT extends LinkedObject {
     if (direction == this.entrance) {
       returner = this.prevObj;
     } else {
-      returner = this.nextObj[this.nextDir.indexOf(direction)];
+      returner = this.nextObj[this.nextDir.indexOf(direction)] ?
+      this.nextObj[this.nextDir.indexOf(direction)] : false;
     }
     console.log(direction);
     console.log(this.nextDir.indexOf(direction))

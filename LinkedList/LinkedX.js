@@ -32,7 +32,8 @@ class LinkedX extends LinkedObject {
     if (direction == this.entrance) {
       returner = this.prevObj;
     } else {
-      returner = this.nextObj[this.nextDir.indexOf(direction)];
+      returner = this.nextObj[this.nextDir.indexOf(direction)] ?
+        this.nextObj[this.nextDir.indexOf(direction)] : false;
     }
     return returner;
   }

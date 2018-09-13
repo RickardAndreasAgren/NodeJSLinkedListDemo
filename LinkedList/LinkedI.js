@@ -18,6 +18,8 @@ class LinkedI extends LinkedObject {
     var returner = null;
     if (direction == this.direction) {
       returner = this.nextObj;
+    } else if (!this.nextObj) {
+      returner = false;
     } else {
       returner = this.prevObj;
     }
