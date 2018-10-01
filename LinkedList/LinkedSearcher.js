@@ -1,17 +1,21 @@
 
 const LinkedSearcher = {
 
-  async find(connector, lList) {
+  //{direction entry, id# targetId}, , listObject currentObject
+
+  async find(connector, activeLink) {
     var searchDirection = connector.entry;
-    var currentId = connector.id;
-    var currentObject = iList.activeLink;
+    var targetId = connector.id;
+    var currentObject = activeLink;
     var looking = true;
 
 
     while (looking) {
 
 
-      if (currentObject.val == id) {
+      if (currentObject.val == targetId) {
+        // If any direction of found matches connector.entry
+        if (currentObject)
         looking = false;
       }
     }
@@ -29,4 +33,4 @@ const LinkedSearcher = {
   },
 }
 
-module.exports(LinkedSearcher);
+module.exports = LinkedSearcher;

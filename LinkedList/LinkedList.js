@@ -44,7 +44,7 @@ class LinkedList {
     this.activeLink.setNext({obj: newLink, exit: entrance});
     this.activeLink = newLink;
     newLink.printMe();
-    return 0;
+    return newLink.value;
   }
 
   traverseLink(direction, connectTo) {
@@ -117,12 +117,12 @@ class LinkedList {
       })
     })
     .then(function(connector) {
-      return _this.searchForConnector(connector);
+      return _this.searchForConnector(connector,this.activeLink); // Returns listObject
     })
     .then(function(connectTo) {
       // {obj: Object, next: DIRECTION}
-      setNext({obj: connectTo, next: direction});
-      return true;
+      this.activeLink.setNext({obj: connectTo, next: direction});
+      return 0;
     })
     .catch((err) => {
       console.log(err);
@@ -132,7 +132,7 @@ class LinkedList {
   }
 
   async searchForConnector(connector) {
-    var searchDirection = LinkedSearcher.find(connector,this);
+    var searchDirection = LinkedSearcher.find(connector, this.activeLink);
     return searchDirection;
   }
 

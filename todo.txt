@@ -1,9 +1,6 @@
 
 
-Implement ID to be able to
-  connect links from outside
-  Create an id tracker in LinkedList
-  Make a connect extension of
+Make a connect extension of
     /move endpoint which
       while loops through the chain
       to target id and connects

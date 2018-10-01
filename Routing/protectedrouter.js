@@ -3,7 +3,7 @@ module.exports = function(homedir, router, debug, linkedbackend) {
 
   router.post('/move', function(req,res) {
     new Promise((resolve,reject) => {
-      resolve(linkedbackend.move(req.body.direction));
+      resolve(linkedbackend.move(req.body.direction, req.body.target));
     })
     .then(function(done) {
       if (!done.err) {

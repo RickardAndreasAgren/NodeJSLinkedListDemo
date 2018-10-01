@@ -35,6 +35,7 @@ const deadTile = {
   origin: '0',
   direction: '0',
   tileType: 'e',
+  id: 0,
   placed: false,
 };
 
@@ -279,10 +280,15 @@ const StateManager = {
     })
     .then(function() {
       var returner = null;
+      var change = directions[intent];
+      var targetX = change.x + getX();
+      var targetY = change.y + getY();
+      var targetTile = getField(null,targetX,targetY);
       var actualTile = getField(null,getX(),getY());
       if (actualTile.placed) {
         returner = ClientAPIHelper.move({
           direction: intent,
+          target: targetTile.id,
           password: getPassword(),
         });
       } else {
@@ -544,6 +550,7 @@ const StateManager = {
           origin: getOrigin(),
           direction: getDirection(),
           tileType: getCurrentTile(),
+          id: createResult,
           placed: true,
         });
         setForceUpdate(true);

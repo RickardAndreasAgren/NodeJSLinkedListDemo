@@ -26,9 +26,9 @@ const LinkedInterface = {
     @returns {action: 'Success'} || {err: err, action: 'Failed'}
   */
 
-  move: function(direction) {
+  move: function(direction, connectTo) {
     var returner = null;
-    var moveResult = this.listState.traverseLink(direction)
+    var moveResult = this.listState.traverseLink(direction, connectTo);
     if (moveResult == 0) {
       returner = {action: 'Success'};
     } else {
